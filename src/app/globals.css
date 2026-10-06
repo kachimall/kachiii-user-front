@@ -126,6 +126,8 @@
   --input: #e0e3e6;
   --ring: #0052fe;
   --radius: 0.5rem;
+  /* Mobile tab bar height, excluding the safe-area inset under it. */
+  --bottom-nav-h: 3.75rem;
 }
 
 @layer base {
@@ -145,4 +147,13 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Space reserved for the mobile tab bar (and the home indicator under it). */
+@utility pb-bottom-nav {
+  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+}
+
+@utility bottom-above-nav {
+  bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
 }

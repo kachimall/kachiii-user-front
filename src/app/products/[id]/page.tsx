@@ -23,9 +23,9 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
   const crumbs = product.breadcrumbs ?? [];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
-      <nav aria-label="Breadcrumb" className="mb-8 text-sm text-muted-foreground">
-        <ol className="flex flex-wrap items-center gap-2">
+    <div className="mx-auto max-w-6xl px-3 pt-3 sm:px-6 sm:pt-8">
+      <nav aria-label="Breadcrumb" className="mb-3 text-body-sm text-muted-foreground sm:mb-8 sm:text-sm">
+        <ol className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none sm:flex-wrap">
           <li>
             <Link href="/products" className="hover:text-foreground hover:underline">
               Shop
@@ -40,13 +40,13 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
             </li>
           ))}
           <li aria-hidden>/</li>
-          <li aria-current="page" className="text-foreground">
+          <li aria-current="page" className="max-w-48 truncate text-foreground sm:max-w-none">
             {product.name}
           </li>
         </ol>
       </nav>
 
-      <div className="grid gap-10 md:grid-cols-2 md:gap-16">
+      <div className="grid gap-5 md:grid-cols-2 md:gap-16">
         <div className="flex flex-col gap-2 self-start">
           <div className="rounded-lg bg-surface-container-lowest p-2 shadow-card">
             <ProductImage
@@ -68,7 +68,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5 rounded-lg bg-surface-container-lowest p-4 shadow-card md:gap-6 md:bg-transparent md:p-0 md:shadow-none">
           <div className="flex flex-col items-start gap-2">
             {product.store && (
               <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -79,10 +79,10 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
             <h1 className="font-heading text-headline-lg-mobile tracking-tight sm:text-headline-lg">{product.name}</h1>
           </div>
           {product.description && (
-            <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">{product.description}</p>
+            <p className="max-w-prose text-body-lg leading-relaxed text-muted-foreground sm:text-lg">{product.description}</p>
           )}
           <AddToCart product={product} />
-          <p className="flex items-start gap-3 rounded-2xl border bg-card p-4 text-sm">
+          <p className="flex items-start gap-3 rounded-lg border bg-surface-container-low p-3 text-body-sm sm:rounded-2xl sm:bg-card sm:p-4 sm:text-sm">
             <TruckIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
             <span>Delivery across the UAE. Fees and dates are shown at checkout once you pick an address.</span>
           </p>
@@ -90,8 +90,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
       </div>
 
       {related.length > 0 && (
-        <section className="mt-24">
-          <h2 className="mb-8 font-heading text-3xl font-extrabold tracking-tight">More {product.category?.name.toLowerCase()}</h2>
+        <section className="mt-10 sm:mt-24">
+          <h2 className="mb-4 font-heading text-headline-lg-mobile tracking-tight sm:mb-8 sm:text-3xl sm:font-extrabold">More {product.category?.name.toLowerCase()}</h2>
           <ProductGrid products={related} />
         </section>
       )}

@@ -55,27 +55,31 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-      <header className="mb-8 flex flex-col gap-2">
-        <h1 className="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">{heading}</h1>
-        <p className="text-muted-foreground">
+    <div className="mx-auto max-w-6xl px-3 pt-4 sm:px-6 sm:pt-10">
+      <header className="mb-3 flex items-end justify-between gap-3 sm:mb-8 sm:flex-col sm:items-start sm:gap-2">
+        <h1 className="min-w-0 truncate font-heading text-headline-lg-mobile tracking-tight sm:text-5xl sm:font-extrabold">
+          {heading}
+        </h1>
+        <p className="shrink-0 text-body-sm text-muted-foreground sm:text-body-lg">
           {products.length} {products.length === 1 ? "item" : "items"}
         </p>
       </header>
 
-      <div className="mb-10 flex flex-col gap-4 border-b pb-6 md:flex-row md:items-center md:justify-between">
-        <nav aria-label="Filter by category">
-          <ul className="flex flex-wrap gap-2">
+      <div className="-mx-3 mb-4 flex flex-col gap-2.5 border-b bg-surface-container-lowest px-3 py-2.5 sm:mx-0 sm:mb-10 sm:gap-4 sm:bg-transparent sm:px-0 sm:pt-0 sm:pb-6 md:flex-row md:items-center md:justify-between">
+        <nav aria-label="Filter by category" className="min-w-0">
+          <ul className="-mx-3 flex gap-2 overflow-x-auto px-3 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
             {[{ slug: undefined, name: "All" }, ...categories].map((c) => {
               const active = c.slug === filters.category;
               return (
-                <li key={c.name}>
+                <li key={c.name} className="shrink-0">
                   <Link
                     href={hrefFor(c.slug)}
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "inline-block rounded-full border px-4 py-1.5 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
-                      active ? "border-foreground bg-foreground text-background" : "bg-card hover:border-foreground/40",
+                      active
+                        ? "border-primary-container bg-primary-container font-semibold text-white"
+                        : "bg-card hover:border-foreground/40",
                     )}
                   >
                     {c.name}

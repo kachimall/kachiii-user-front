@@ -24,7 +24,7 @@ function LinkList({ title, items }: { title: string; items: string[] }) {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-6 bg-surface-container-low pb-24 sm:pb-0">
+    <footer className="mt-6 bg-surface-container-low">
       <div className="mx-auto max-w-7xl px-3 py-6 md:px-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <LinkList title="Customer Care" items={customerCare} />

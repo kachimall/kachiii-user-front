@@ -272,7 +272,7 @@ export function CheckoutForm() {
         shipping={preview ? Number(preview.shipping_total) : undefined}
         discount={preview ? Number(preview.discount_total) : 0}
         total={preview ? Number(preview.grand_total) : undefined}
-        className="self-start lg:sticky lg:top-32"
+        className="self-start lg:sticky lg:top-42"
       >
         <form
           className="flex flex-col gap-1.5"

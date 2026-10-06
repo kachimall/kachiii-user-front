@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils";
 
 export function MainNav() {
   const pathname = usePathname();
+  // Several promos share a path; only the first match shows as current.
+  const activeLabel = mainNav.find((item) => item.href === pathname)?.label;
 
   return (
     <nav aria-label="Main" className="min-w-0 flex-1">
       <ul className="flex items-center gap-2.5 overflow-x-auto scrollbar-none">
         {mainNav.map((item) => {
-          const active = item.href === pathname;
+          const active = item.label === activeLabel;
           return (
             <li key={item.label} className="shrink-0">
               <Link

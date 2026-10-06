@@ -11,7 +11,7 @@ import { ApiError } from "@/lib/api/client";
 import { formatPrice } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth";
-import { selectSubtotal, useCart, useCartHydrated } from "@/store/cart";
+import { selectCount, selectSubtotal, useCart, useCartHydrated } from "@/store/cart";
 import type { CartItem } from "@/types";
 
 const statusNote: Record<NonNullable<CartItem["status"]>, string | undefined> = {
@@ -32,6 +32,8 @@ export function CartView() {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const signedIn = useAuth((s) => !!s.token);
+  const itemCount = useCart(selectCount);
+  const checkoutHref = signedIn ? "/checkout" : "/login?next=/checkout";
 
   if (!hydrated) {
     return <div aria-busy className="h-64 animate-pulse rounded-3xl bg-muted" />;
@@ -50,27 +52,27 @@ export function CartView() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_22rem]">
-      <ul className="flex flex-col divide-y border-y">
+    <div className="grid gap-6 pb-20 lg:grid-cols-[1fr_22rem] lg:gap-10 lg:pb-0">
+      <ul className="flex flex-col divide-y rounded-lg bg-surface-container-lowest px-3 shadow-card sm:rounded-none sm:border-y sm:bg-transparent sm:px-0 sm:shadow-none">
         {items.map((item) => {
           const note = item.status && statusNote[item.status];
           return (
-            <li key={item.variantId} className="flex gap-4 py-5">
-              <Link href={`/products/${item.productId}`} className="w-24 shrink-0 sm:w-28">
+            <li key={item.variantId} className="flex gap-3 py-4 sm:gap-4 sm:py-5">
+              <Link href={`/products/${item.productId}`} className="w-20 shrink-0 sm:w-28">
                 <ProductImage name={item.name} image={item.image} sizes="112px" className="rounded-2xl" />
               </Link>
               <div className="flex flex-1 flex-col gap-3">
-                <div className="flex justify-between gap-4">
-                  <div>
-                    <Link href={`/products/${item.productId}`} className="font-medium hover:underline">
+                <div className="flex justify-between gap-3 sm:gap-4">
+                  <div className="min-w-0">
+                    <Link href={`/products/${item.productId}`} className="line-clamp-2 font-medium hover:underline">
                       {item.name}
                     </Link>
                     <p className="text-sm text-muted-foreground">{item.variantName}</p>
                     {note && <p className="text-sm text-destructive">{note}</p>}
                   </div>
-                  <p className="tabular-nums text-sm">{formatPrice(item.price * item.quantity)}</p>
+                  <p className="shrink-0 font-heading text-sm font-bold text-secondary tabular-nums">{formatPrice(item.price * item.quantity)}</p>
                 </div>
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-2 sm:gap-4">
                   <QuantityStepper
                     label={`Quantity for ${item.name}`}
                     value={item.quantity}
@@ -83,7 +85,7 @@ export function CartView() {
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     <Trash2Icon aria-hidden className="size-4" />
-                    Remove
+                    <span className="sr-only sm:not-sr-only">Remove</span>
                   </button>
                 </div>
               </div>
@@ -92,9 +94,9 @@ export function CartView() {
         })}
       </ul>
 
-      <OrderSummary subtotal={subtotal} className="self-start lg:sticky lg:top-32">
+      <OrderSummary subtotal={subtotal} className="self-start lg:sticky lg:top-42">
         <Link
-          href={signedIn ? "/checkout" : "/login?next=/checkout"}
+          href={checkoutHref}
           className={cn(buttonVariants(), "h-11 rounded-full text-base")}
         >
           {signedIn ? "Check out" : "Sign in to check out"}
@@ -103,6 +105,24 @@ export function CartView() {
           Keep shopping
         </Link>
       </OrderSummary>
+
+      {/* Phone checkout bar, docked above the tab bar. */}
+      <div className="fixed inset-x-0 bottom-above-nav z-30 border-t border-surface-container bg-surface-container-lowest/95 px-3 py-2 md:bottom-0 md:pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-float backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="leading-tight">
+            <p className="text-label-xs font-normal text-on-surface-variant">
+              Subtotal · {itemCount} {itemCount === 1 ? "item" : "items"}
+            </p>
+            <p className="font-heading text-price-hero text-secondary tabular-nums">{formatPrice(subtotal)}</p>
+          </div>
+          <Link
+            href={checkoutHref}
+            className={cn(buttonVariants(), "h-11 rounded-full bg-linear-to-r from-primary to-primary-container px-6 font-heading text-headline-sm")}
+          >
+            {signedIn ? "Check out" : "Sign in to check out"}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

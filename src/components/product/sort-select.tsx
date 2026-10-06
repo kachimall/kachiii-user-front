@@ -23,7 +23,7 @@ export function SortSelect({ value }: { value: ProductSort }) {
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className="flex items-center justify-end gap-2 text-sm">
       <span className="text-muted-foreground">Sort by</span>
       <select
         value={value}
