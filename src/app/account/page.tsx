@@ -5,8 +5,8 @@ export const metadata: Metadata = { title: "My account" };
 
 export default function AccountPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-10 pb-16 sm:px-6">
-      <h1 className="mb-8 font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">My account</h1>
+    <div className="mx-auto max-w-7xl px-3 pt-3 md:px-6 md:pt-6 pb-10">
+      <h1 className="mb-3 font-heading text-headline-lg-mobile md:text-headline-lg md:mb-4">My account</h1>
       <AccountOverview />
     </div>
   );

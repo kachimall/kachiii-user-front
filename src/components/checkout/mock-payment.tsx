@@ -40,7 +40,7 @@ export function MockPayment() {
     }
   }
 
-  if (!ready) return <div aria-busy className="h-64 animate-pulse rounded-3xl bg-muted" />;
+  if (!ready) return <div aria-busy className="h-64 animate-pulse rounded-lg bg-surface-container" />;
 
   if (!purchaseId || !token || error) {
     return (
@@ -56,10 +56,10 @@ export function MockPayment() {
     );
   }
 
-  if (!order) return <div aria-busy className="h-64 animate-pulse rounded-3xl bg-muted" />;
+  if (!order) return <div aria-busy className="h-64 animate-pulse rounded-lg bg-surface-container" />;
 
   return (
-    <div className="flex flex-col gap-6 rounded-3xl border bg-card p-6">
+    <div className="flex flex-col gap-6 rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5">
       <div className="flex items-center gap-3">
         <CreditCardIcon aria-hidden className="size-8 text-primary" />
         <div>
@@ -67,7 +67,7 @@ export function MockPayment() {
           <p className="text-sm text-muted-foreground">Order {order.number}</p>
         </div>
       </div>
-      <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
+      <p className="rounded-md bg-surface-container-low p-4 text-sm text-muted-foreground">
         Test payment page. No card is charged — choose how the payment should end.
       </p>
       <div className="flex flex-wrap gap-3">

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronRightIcon, LogOutIcon } from "lucide-react";
+import { ChevronRightIcon, LogInIcon, LogOutIcon, PackageIcon } from "lucide-react";
 import { formatDate, orderStatusLabel } from "@/components/account/order-details";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { EmptyState, Skeleton } from "@/components/ui/empty-state";
 import { getPurchases } from "@/lib/api/account";
 import { ApiError, type ApiMeta } from "@/lib/api/client";
 import type { ApiPurchase } from "@/lib/api/schema";
@@ -34,16 +35,18 @@ export function AccountOverview() {
       .catch((e) => setError(e instanceof ApiError ? e.message : "Couldn’t load your orders."));
   }, [token, page]);
 
-  if (!ready) return <div aria-busy className="h-96 animate-pulse rounded-3xl bg-muted" />;
+  if (!ready) return <Skeleton className="h-96 rounded-lg" />;
 
   if (!token) {
     return (
-      <div className="flex flex-col items-start gap-4 rounded-3xl border border-dashed bg-card p-10">
-        <p className="font-heading text-2xl font-bold">Sign in to see your orders.</p>
-        <Link href="/login?next=/account" className={cn(buttonVariants(), "h-10 rounded-full px-5")}>
+      <EmptyState icon={LogInIcon} title="Sign in to see your orders" description="Track deliveries, pay pending orders and request returns.">
+        <Link href="/login?next=/account" className={cn(buttonVariants(), "h-10 rounded-full px-6")}>
           Sign in
         </Link>
-      </div>
+        <Link href="/register" className={cn(buttonVariants({ variant: "outline" }), "h-10 rounded-full px-6")}>
+          Create account
+        </Link>
+      </EmptyState>
     );
   }
 
@@ -54,13 +57,20 @@ export function AccountOverview() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[18rem_1fr]">
-      <aside className="flex flex-col gap-3 self-start rounded-3xl border bg-card p-6">
-        <p className="font-heading text-xl font-bold">{user?.name}</p>
-        <p className="text-sm text-muted-foreground">{user?.email}</p>
-        {user?.phone && <p className="text-sm text-muted-foreground">{user.phone}</p>}
+    <div className="grid gap-4 lg:grid-cols-[18rem_1fr] lg:gap-6">
+      <aside className="flex flex-col gap-3 self-start rounded-lg bg-surface-container-lowest p-5 shadow-card">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-linear-to-br from-primary to-primary-container font-heading text-headline-sm text-white uppercase">
+            {user?.name?.trim().charAt(0) || "?"}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-heading text-headline-sm">{user?.name}</p>
+            <p className="truncate text-body-sm text-on-surface-variant">{user?.email}</p>
+            {user?.phone && <p className="text-body-sm text-on-surface-variant">{user.phone}</p>}
+          </div>
+        </div>
         {user && !user.email_verified && (
-          <p className="rounded-xl bg-primary-fixed p-3 text-sm text-on-primary-fixed-variant">
+          <p className="rounded-md bg-primary-fixed p-3 text-body-sm text-on-primary-fixed-variant">
             Verify your email to place orders — check your inbox for the link.
           </p>
         )}
@@ -71,32 +81,31 @@ export function AccountOverview() {
       </aside>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-heading text-2xl font-bold">My orders</h2>
+        <h2 className="font-heading text-headline-md">My orders</h2>
         {error && <p className="text-destructive">{error}</p>}
-        {!orders && !error && <div aria-busy className="h-48 animate-pulse rounded-3xl bg-muted" />}
+        {!orders && !error && <Skeleton className="h-48 rounded-lg" />}
         {orders?.length === 0 && (
-          <div className="flex flex-col items-start gap-3 rounded-3xl border border-dashed bg-card p-8">
-            <p className="text-muted-foreground">No orders yet.</p>
-            <Link href="/products" className={cn(buttonVariants(), "h-10 rounded-full px-5")}>
+          <EmptyState icon={PackageIcon} title="No orders yet" description="When you place an order it shows up here.">
+            <Link href="/products" className={cn(buttonVariants(), "h-10 rounded-full px-6")}>
               Start shopping
             </Link>
-          </div>
+          </EmptyState>
         )}
         {orders && orders.length > 0 && (
-          <ul className="flex flex-col divide-y rounded-3xl border bg-card">
+          <ul className="flex flex-col divide-y divide-surface-container overflow-hidden rounded-lg bg-surface-container-lowest shadow-card">
             {orders.map((order) => (
               <li key={order.id}>
-                <Link href={`/account/orders/${order.id}`} className="flex items-center gap-4 p-5 hover:bg-muted/50">
+                <Link href={`/account/orders/${order.id}`} className="flex items-center gap-4 p-4 transition-colors hover:bg-surface-container-low md:p-5">
                   <div className="flex-1">
-                    <p className="font-medium">{order.number}</p>
+                    <p className="font-heading text-headline-sm">{order.number}</p>
                     <p className="text-sm text-muted-foreground">
                       {formatDate(order.placed_at ?? order.created_at)} ·{" "}
                       {order.orders.reduce((n, o) => n + o.items.reduce((m, i) => m + i.quantity, 0), 0)} items
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="tabular-nums font-medium">{formatPrice(order.grand_total)}</p>
-                    <p className="text-sm text-muted-foreground">{orderStatusLabel[order.status] ?? order.status}</p>
+                    <p className="font-heading text-price-card text-secondary tabular-nums">{formatPrice(order.grand_total)}</p>
+                    <StatusPill status={order.status} />
                   </div>
                   <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />
                 </Link>
@@ -119,5 +128,20 @@ export function AccountOverview() {
         )}
       </section>
     </div>
+  );
+}
+
+const statusTone: Record<string, string> = {
+  pending: "bg-tertiary-fixed text-on-tertiary-fixed",
+  delivered: "bg-success/10 text-success",
+  cancelled: "bg-surface-container-high text-on-surface-variant",
+  returned: "bg-surface-container-high text-on-surface-variant",
+};
+
+function StatusPill({ status }: { status: string }) {
+  return (
+    <span className={cn("mt-1 inline-block rounded-full px-2 py-0.5 text-label-xs", statusTone[status] ?? "bg-secondary-fixed text-secondary")}>
+      {orderStatusLabel[status] ?? status}
+    </span>
   );
 }

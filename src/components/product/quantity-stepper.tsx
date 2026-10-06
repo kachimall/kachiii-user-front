@@ -17,7 +17,7 @@ export function QuantityStepper({ value, onChange, min = 1, max = 99, label, cla
     <div
       role="group"
       aria-label={label}
-      className={cn("inline-flex h-10 items-center rounded-full border bg-card", className)}
+      className={cn("inline-flex h-10 items-center rounded-full border border-surface-container-highest bg-surface-container-lowest", className)}
     >
       <button
         type="button"

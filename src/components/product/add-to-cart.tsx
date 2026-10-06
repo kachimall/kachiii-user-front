@@ -34,6 +34,7 @@ export function AddToCart({ product }: { product: Product }) {
   const variant = picked;
   const soldOut = variant.stock === 0;
   const lowStock = variant.stock > 0 && variant.stock <= 5;
+  const savings = variant.compareAtPrice ? Math.max(0, variant.compareAtPrice - variant.price) : 0;
 
   async function handleAdd() {
     setAdding(true);
@@ -63,10 +64,19 @@ export function AddToCart({ product }: { product: Product }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <Price price={variant.price} compareAtPrice={variant.compareAtPrice} size="hero" />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-surface-container-low px-3 py-2.5">
+        <Price price={variant.price} compareAtPrice={variant.compareAtPrice} size="hero" />
+        {savings > 0 && (
+          <span className="rounded-sm bg-primary-fixed px-1.5 py-0.5 text-label-md text-primary">
+            You save {formatPrice(savings)}
+          </span>
+        )}
+      </div>
       {showPicker ? (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">Option</legend>
+          <legend className="mb-2 text-label-md text-on-surface-variant">
+            Option: <span className="text-on-surface">{variant.name}</span>
+          </legend>
           <div className="flex flex-wrap gap-2">
             {product.variants.map((v) => {
               const selected = v.id === variant.id;
@@ -80,11 +90,11 @@ export function AddToCart({ product }: { product: Product }) {
                     setQuantity(1);
                   }}
                   className={cn(
-                    "rounded-full border px-4 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "rounded-md border px-3.5 py-2 text-body-md outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
                     selected
-                      ? "border-foreground bg-foreground text-background"
-                      : "bg-card hover:border-foreground/40",
-                    v.stock === 0 && "text-muted-foreground line-through",
+                      ? "border-primary-container bg-primary-fixed font-semibold text-primary"
+                      : "border-surface-container-highest bg-surface-container-lowest hover:border-primary-container/50",
+                    v.stock === 0 && "text-outline line-through",
                   )}
                 >
                   {v.name}
@@ -95,10 +105,10 @@ export function AddToCart({ product }: { product: Product }) {
           </div>
         </fieldset>
       ) : (
-        <p className="text-sm text-muted-foreground">{variant.name}</p>
+        variant.name !== "Standard" && <p className="text-body-md text-on-surface-variant">{variant.name}</p>
       )}
 
-      <p className="flex items-center gap-2 text-sm">
+      <p className={cn("flex items-center gap-2 text-body-md", lowStock && "font-semibold text-tertiary")}>
         <span
           aria-hidden
           className={cn("size-2 rounded-full", soldOut ? "bg-destructive" : lowStock ? "bg-star" : "bg-success")}
@@ -113,8 +123,14 @@ export function AddToCart({ product }: { product: Product }) {
           onChange={setQuantity}
           max={Math.max(1, variant.stock)}
         />
-        <Button onClick={handleAdd} disabled={soldOut || adding} className="h-10 flex-1 rounded-full px-6 text-sm sm:flex-none">
-          {soldOut ? "Sold out" : "Add to cart"}
+        {/* Phones use the buy bar below instead. */}
+        <Button
+          onClick={handleAdd}
+          disabled={soldOut || adding}
+          className="hidden h-11 flex-1 rounded-full bg-linear-to-r from-primary to-primary-container px-8 font-heading text-headline-sm text-white hover:opacity-95 md:inline-flex"
+        >
+          <ShoppingBagIcon aria-hidden className="size-4.5" />
+          {soldOut ? "Sold out" : adding ? "Adding…" : "Add to cart"}
         </Button>
       </div>
 

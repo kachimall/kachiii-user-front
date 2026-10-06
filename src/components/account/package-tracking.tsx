@@ -43,7 +43,7 @@ export function PackageTracking({ pkg, title }: { pkg: ApiShipment; title: strin
   const days = pkg.min_days === pkg.max_days ? `${pkg.min_days}` : `${pkg.min_days}–${pkg.max_days}`;
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border p-4">
+    <div className="flex flex-col gap-3 rounded-lg border border-surface-container-highest p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-start gap-2">
           <PackageIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpDownIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProductSort } from "@/types";
 
@@ -23,12 +24,15 @@ export function SortSelect({ value }: { value: ProductSort }) {
   }
 
   return (
-    <label className="flex items-center justify-end gap-2 text-sm">
-      <span className="text-muted-foreground">Sort by</span>
+    <label className="flex shrink-0 items-center justify-end gap-2 text-label-md">
+      <span className="flex items-center gap-1 text-on-surface-variant">
+        <ArrowUpDownIcon aria-hidden className="size-3.5" />
+        Sort by
+      </span>
       <select
         value={value}
         onChange={(e) => handleChange(e.target.value)}
-        className="h-9 rounded-full border bg-card px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-8 cursor-pointer rounded-full border border-surface-container-highest bg-surface-container-lowest px-3 text-label-md outline-none transition-colors hover:border-primary-container/50 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

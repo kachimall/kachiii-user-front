@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { MailIcon } from "lucide-react";
+import { LogInIcon, MailIcon, ShoppingBagIcon } from "lucide-react";
 import { toast } from "sonner";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { AddressForm, formatAddress } from "@/components/checkout/address-form";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { EmptyState, Skeleton } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -126,12 +127,12 @@ export function CheckoutForm() {
   }
 
   if (!authReady || !cartReady) {
-    return <div aria-busy className="h-96 animate-pulse rounded-3xl bg-muted" />;
+    return <Skeleton className="h-96 rounded-lg" />;
   }
 
   if (!token) {
     return (
-      <Notice title="Sign in to check out">
+      <Notice icon={LogInIcon} title="Sign in to check out" description="Your cart is saved — sign in to choose an address and pay.">
         <Link href="/login?next=/checkout" className={cn(buttonVariants(), "h-10 rounded-full px-5")}>
           Sign in
         </Link>
@@ -145,7 +146,7 @@ export function CheckoutForm() {
 
   if (items.length === 0 && !placing) {
     return (
-      <Notice title="There’s nothing to check out yet.">
+      <Notice icon={ShoppingBagIcon} title="There’s nothing to check out yet" description="Add something to your cart first.">
         <Link href="/products" className={cn(buttonVariants(), "h-10 rounded-full px-5")}>
           Start shopping
         </Link>
@@ -156,12 +157,12 @@ export function CheckoutForm() {
   const selectedAddress = addresses?.find((a) => a.id === addressId);
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_22rem]">
-      <div className="flex flex-col gap-10">
-        <section className="flex flex-col gap-4">
-          <h2 className="font-heading text-xl font-bold">Delivery address</h2>
+    <div className="grid gap-4 lg:grid-cols-[1fr_22rem] lg:gap-6">
+      <div className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 rounded-lg bg-surface-container-lowest p-4 shadow-card md:p-5">
+          <Step n={1}>Delivery address</Step>
           {addresses === null ? (
-            <div aria-busy className="h-24 animate-pulse rounded-2xl bg-muted" />
+            <Skeleton className="h-24 rounded-lg" />
           ) : (
             <>
               {addresses.length > 0 && (
@@ -169,7 +170,7 @@ export function CheckoutForm() {
                   {addresses.map((a) => (
                     <Label
                       key={a.id}
-                      className="flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 font-normal has-data-checked:border-primary"
+                      className="flex cursor-pointer items-start gap-3 rounded-lg border border-surface-container-highest p-4 font-normal transition-colors hover:border-primary-container/50 has-data-checked:border-primary-container has-data-checked:bg-primary-fixed/40"
                     >
                       <RadioGroupItem value={a.id} className="mt-0.5" />
                       <span className="flex flex-col gap-0.5">
@@ -208,10 +209,10 @@ export function CheckoutForm() {
         </section>
 
         {preview && (
-          <section className="flex flex-col gap-4">
-            <h2 className="font-heading text-xl font-bold">Delivery</h2>
+          <section className="flex flex-col gap-4 rounded-lg bg-surface-container-lowest p-4 shadow-card md:p-5">
+            <Step n={2}>Delivery</Step>
             {preview.packages.map((pkg) => (
-              <div key={pkg.key} className="flex flex-col gap-3 rounded-2xl border bg-card p-4">
+              <div key={pkg.key} className="flex flex-col gap-3 rounded-lg border border-surface-container-highest p-4">
                 <p className="text-sm font-medium">{pkg.store?.name ?? "Kachi fulfilment"}</p>
                 <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
                   {pkg.items.map((i) => (
@@ -244,14 +245,14 @@ export function CheckoutForm() {
         )}
 
         {preview && (
-          <section className="flex flex-col gap-4">
-            <h2 className="font-heading text-xl font-bold">Payment</h2>
+          <section className="flex flex-col gap-4 rounded-lg bg-surface-container-lowest p-4 shadow-card md:p-5">
+            <Step n={3}>Payment</Step>
             <RadioGroup value={payment} onValueChange={(v) => setPayment(v as ApiPaymentMethod)} className="gap-3">
               {preview.payment_methods.map((m) => (
                 <Label
                   key={m.code}
                   className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 font-normal has-data-checked:border-primary",
+                    "flex cursor-pointer items-start gap-3 rounded-lg border border-surface-container-highest p-4 font-normal transition-colors hover:border-primary-container/50 has-data-checked:border-primary-container has-data-checked:bg-primary-fixed/40",
                     !m.available && "cursor-not-allowed opacity-60",
                   )}
                 >
@@ -310,7 +311,7 @@ export function CheckoutForm() {
         <Button
           onClick={handlePlaceOrder}
           disabled={!preview || !payment || pricing || placing || !selectedAddress}
-          className="h-11 rounded-full text-base"
+          className="h-11 rounded-full bg-linear-to-r from-primary to-primary-container font-heading text-headline-sm"
         >
           {placing ? "Placing order…" : pricing ? "Updating total…" : "Place order"}
         </Button>
@@ -319,12 +320,16 @@ export function CheckoutForm() {
   );
 }
 
-function Notice({ title, children }: { title: string; children?: React.ReactNode }) {
+const Notice = EmptyState;
+
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-4 rounded-3xl border border-dashed bg-card p-10">
-      <p className="font-heading text-2xl font-bold">{title}</p>
+    <h2 className="flex items-center gap-2 font-heading text-headline-md">
+      <span aria-hidden className="grid size-7 place-items-center rounded-full bg-primary-container text-label-md text-white">
+        {n}
+      </span>
       {children}
-    </div>
+    </h2>
   );
 }
 
@@ -344,12 +349,12 @@ function VerifyEmailNotice({ token, email }: { token: string; email: string }) {
   }
 
   return (
-    <Notice title="Verify your email to check out">
-      <p className="flex items-start gap-2 text-muted-foreground">
-        <MailIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
-        We sent a link to {email}. Open it, then come back and refresh this page.
-      </p>
-      <div className="flex gap-3">
+    <Notice
+      icon={MailIcon}
+      title="Verify your email to check out"
+      description={`We sent a link to ${email}. Open it, then come back and refresh this page.`}
+    >
+      <div className="flex flex-wrap justify-center gap-3">
         <Button onClick={resend} disabled={sending} className="h-10 rounded-full px-5">
           {sending ? "Sending…" : "Resend email"}
         </Button>

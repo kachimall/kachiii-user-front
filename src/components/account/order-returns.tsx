@@ -114,7 +114,7 @@ export function ReturnForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-muted/30 p-4">
+    <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg border border-primary-container/30 bg-primary-fixed/30 p-4">
       <div>
         <p className="font-medium">Return items</p>
         {pkg.return_by && (
@@ -295,7 +295,7 @@ export function ReturnCard({ ret, token, onChange }: { ret: ApiReturn; token: st
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border p-4 text-sm">
+    <div className="flex flex-col gap-3 rounded-lg border border-surface-container-highest p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-medium">Return {ret.number}</p>
@@ -423,7 +423,7 @@ export function ReturnCard({ ret, token, onChange }: { ret: ApiReturn; token: st
 /** Money owed back to the shopper on this order. */
 export function RefundList({ refunds }: { refunds: ApiRefund[] }) {
   return (
-    <section className="rounded-3xl border bg-card p-6 text-sm">
+    <section className="rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5 text-sm">
       <h2 className="mb-2 font-heading text-lg font-bold">Refunds</h2>
       <ul className="flex flex-col divide-y">
         {refunds.map((refund) => (

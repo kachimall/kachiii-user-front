@@ -13,7 +13,7 @@ export default async function OrderPage({ params }: PageProps<"/account/orders/[
       <Link href="/account" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
         ← My orders
       </Link>
-      <h1 className="mt-4 mb-8 font-heading text-4xl font-extrabold tracking-tight">Order details</h1>
+      <h1 className="mt-3 mb-4 font-heading text-headline-lg-mobile md:text-headline-lg">Order details</h1>
       <OrderDetails id={id} />
     </div>
   );

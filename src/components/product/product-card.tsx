@@ -7,7 +7,7 @@ import { discountLabel, formatCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
-const perkTone = {
+export const perkTone = {
   primary: "bg-primary-fixed text-primary",
   secondary: "bg-secondary-fixed text-secondary",
   tertiary: "bg-tertiary-fixed text-on-tertiary-fixed",

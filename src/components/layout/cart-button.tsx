@@ -24,14 +24,22 @@ export function CartButton() {
     <Link
       href="/cart"
       aria-label={shown > 0 ? `Cart, ${shown} items` : "Cart"}
-      className="relative rounded-lg p-1 outline-none transition-colors hover:bg-surface-container focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="flex items-center gap-2 rounded-lg px-2 py-1 outline-none transition-colors hover:bg-surface-container-low focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <ShoppingBagIcon className="size-6" />
-      {shown > 0 && (
-        <span className="absolute top-0 right-0 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-white">
-          {shown > 99 ? "99+" : shown}
+      <span className="relative">
+        <ShoppingBagIcon aria-hidden className="size-6" strokeWidth={1.75} />
+        {shown > 0 && (
+          <span className="absolute -top-1.5 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-white ring-2 ring-surface-container-lowest">
+            {shown > 99 ? "99+" : shown}
+          </span>
+        )}
+      </span>
+      <span aria-hidden className="hidden flex-col text-left lg:flex">
+        <span className="text-label-md">Cart</span>
+        <span className="text-label-xs font-normal text-on-surface-variant">
+          {shown} {shown === 1 ? "item" : "items"}
         </span>
-      )}
+      </span>
     </Link>
   );
 }

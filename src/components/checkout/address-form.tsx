@@ -45,7 +45,7 @@ export function AddressForm({ token, defaultName, makeDefault, onSaved, onCancel
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4 rounded-2xl border bg-card p-5 sm:grid-cols-2">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-4 rounded-lg border border-surface-container-highest bg-surface-container-lowest p-4 sm:grid-cols-2">
       <Field label="Recipient name" error={errors.recipient_name?.message}>
         <Input autoComplete="name" {...register("recipient_name")} />
       </Field>

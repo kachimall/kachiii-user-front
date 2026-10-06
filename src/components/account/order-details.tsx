@@ -71,7 +71,7 @@ export function OrderDetails({ id }: { id: string }) {
       .catch(() => {});
   }, [token, id]);
 
-  if (!ready) return <div aria-busy className="h-96 animate-pulse rounded-3xl bg-muted" />;
+  if (!ready) return <div aria-busy className="h-96 animate-pulse rounded-lg bg-surface-container" />;
   if (!token) {
     return (
       <Link href={`/login?next=/account/orders/${id}`} className={cn(buttonVariants(), "h-10 rounded-full px-5")}>
@@ -80,7 +80,7 @@ export function OrderDetails({ id }: { id: string }) {
     );
   }
   if (error) return <p className="text-destructive">{error}</p>;
-  if (!order) return <div aria-busy className="h-96 animate-pulse rounded-3xl bg-muted" />;
+  if (!order) return <div aria-busy className="h-96 animate-pulse rounded-lg bg-surface-container" />;
 
   async function act(action: () => Promise<ApiPurchase>, done: string) {
     setBusy(true);
@@ -112,7 +112,7 @@ export function OrderDetails({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <dl className="grid gap-4 rounded-3xl border bg-card p-6 text-sm sm:grid-cols-4">
+      <dl className="grid gap-4 rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5 text-sm sm:grid-cols-4">
         <Item label="Order number" value={order.number} />
         <Item label="Placed" value={formatDate(order.placed_at ?? order.created_at)} />
         <Item label="Status" value={orderStatusLabel[order.status] ?? order.status} />
@@ -144,7 +144,7 @@ export function OrderDetails({ id }: { id: string }) {
         const packageIds = new Set(vendorOrder.items.map((i) => i.package_id));
         const packages = (order.packages ?? []).filter((p) => packageIds.has(p.id) || p.order_id === vendorOrder.id);
         return (
-          <section key={vendorOrder.id} className="flex flex-col gap-3 rounded-3xl border bg-card p-6">
+          <section key={vendorOrder.id} className="flex flex-col gap-3 rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-heading text-lg font-bold">{vendorOrder.store.name}</h2>
               <span className="text-sm text-muted-foreground">
@@ -205,14 +205,14 @@ export function OrderDetails({ id }: { id: string }) {
 
       <div className="grid gap-6 sm:grid-cols-2">
         {address && (
-          <section className="rounded-3xl border bg-card p-6 text-sm">
+          <section className="rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5 text-sm">
             <h2 className="mb-2 font-heading text-lg font-bold">Delivering to</h2>
             <p className="font-medium">{address.recipient_name}</p>
             {address.emirate && <p className="text-muted-foreground">{formatAddress(address as Parameters<typeof formatAddress>[0])}</p>}
             <p className="text-muted-foreground">{address.phone}</p>
           </section>
         )}
-        <section className="rounded-3xl border bg-card p-6 text-sm">
+        <section className="rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5 text-sm">
           <h2 className="mb-2 font-heading text-lg font-bold">Total</h2>
           <dl className="flex flex-col gap-1.5">
             <Row label="Items" value={formatPrice(order.items_total)} />
