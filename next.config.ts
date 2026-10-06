@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const api = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1");
+// The live server keeps public images on Cloudflare R2, served from its own domain.
+const media = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : undefined;
 
 const nextConfig: NextConfig = {
   // The dev server only trusts localhost by default; without this, opening the app via
@@ -10,8 +12,8 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   images: {
-    // Banner and category art from the design handoff, plus product and category
-    // photos from the backend's /storage (rendered unoptimized, see isApiImage).
+    // Banner and category art from the design handoff, plus product, category and banner
+    // photos from the backend's /storage or the R2 media domain (rendered unoptimized, see isApiImage).
     // 90 is used for the showcase faces: smooth gradients band and look blocky at the default 75.
     qualities: [75, 90],
     remotePatterns: [
@@ -22,6 +24,16 @@ const nextConfig: NextConfig = {
         port: api.port,
         pathname: "/storage/**",
       },
+      ...(media
+        ? [
+            {
+              protocol: media.protocol.replace(":", "") as "http" | "https",
+              hostname: media.hostname,
+              port: media.port,
+              pathname: "/**",
+            },
+          ]
+        : []),
     ],
   },
 };

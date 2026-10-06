@@ -7,10 +7,18 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000
 const apiOrigin = new URL(API_URL).origin;
 
 /**
- * Backend images (products, categories) are already resized WebP, and the
+ * Where the live server's public images are served from (Cloudflare R2, e.g.
+ * https://media.kachiii.com), when that is not the API's own /storage.
+ */
+export const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL || undefined;
+
+const imageOrigins = [apiOrigin, ...(MEDIA_URL ? [new URL(MEDIA_URL).origin] : [])];
+
+/**
+ * Backend images (products, categories, banners) are already resized WebP, and the
  * image optimizer refuses localhost origins, so they skip optimization.
  */
-export const isApiImage = (src: string) => src.startsWith(apiOrigin);
+export const isApiImage = (src: string) => imageOrigins.some((origin) => src.startsWith(`${origin}/`));
 
 export type ApiMeta = {
   current_page?: number;

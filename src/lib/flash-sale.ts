@@ -22,11 +22,23 @@ export function useNowSeconds(): number | null {
   return useSyncExternalStore(subscribe, nowInSeconds, () => null);
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 /** Time left in the current flash sale slot as zero-padded [hh, mm, ss]. */
 export function useFlashSaleRemaining(): [string, string, string] | null {
   const now = useNowSeconds();
   if (now === null) return null;
   const left = Math.max(0, Math.floor((flashSaleEndsAt(now * 1000) - now * 1000) / 1000));
-  const pad = (n: number) => String(n).padStart(2, "0");
   return [pad(Math.floor(left / 3600)), pad(Math.floor((left % 3600) / 60)), pad(left % 60)];
+}
+
+/** Time left until `endsAt` (an ISO time) as whole days and zero-padded [hh, mm, ss]. `null` during SSR. */
+export function useTimeLeft(endsAt: string): { days: number; parts: [string, string, string] } | null {
+  const now = useNowSeconds();
+  if (now === null) return null;
+  const left = Math.max(0, Math.floor(Date.parse(endsAt) / 1000) - now);
+  return {
+    days: Math.floor(left / 86400),
+    parts: [pad(Math.floor((left % 86400) / 3600)), pad(Math.floor((left % 3600) / 60)), pad(left % 60)],
+  };
 }

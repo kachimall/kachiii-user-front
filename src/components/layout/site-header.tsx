@@ -6,6 +6,7 @@ import {
   LanguagesIcon,
   MenuIcon,
   SearchIcon,
+  StoreIcon,
   TruckIcon,
 } from "lucide-react";
 import { CartButton } from "@/components/layout/cart-button";
@@ -14,6 +15,8 @@ import { MainNav } from "@/components/layout/main-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCategories } from "@/lib/api/products";
 import { trendingSearches } from "@/lib/data/home";
+
+const SELLER_URL = process.env.NEXT_PUBLIC_SELLER_URL ?? "http://localhost:3002";
 
 // Fixed row heights at lg (32 + 76 + 44 = 152px) let sticky elements below
 // the header use `lg:top-38`.
@@ -32,6 +35,13 @@ export async function SiteHeader() {
             </li>
           </ul>
           <ul className="flex items-center gap-4">
+            <li>
+              <a href={SELLER_URL} className="flex items-center gap-1 hover:text-on-secondary-container">
+                <StoreIcon aria-hidden className="size-3.5" />
+                Sell on Kachi
+              </a>
+            </li>
+            <li aria-hidden className="opacity-40">|</li>
             <li>
               <Link href="#" className="flex items-center gap-1 hover:text-on-secondary-container">
                 <CircleHelpIcon aria-hidden className="size-3.5" />

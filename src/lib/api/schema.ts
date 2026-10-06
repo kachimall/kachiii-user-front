@@ -59,6 +59,28 @@ export type ApiProduct = ApiProductCard & {
   images: ApiImage[];
 };
 
+/** A live home banner (GET /banners): only what visitors see. */
+export type ApiBanner = {
+  id: string;
+  alt_text: string;
+  headline: string | null;
+  subheadline: string | null;
+  button_label: string | null;
+  /** A shop path ("/categories/shoes") or an https:// address; null when the banner links nowhere. */
+  link_url: string | null;
+  desktop_image_url: string;
+  /** Null when the banner has no mobile image of its own: show the desktop one. */
+  mobile_image_url: string | null;
+  /** Set only when the shop should count down to the banner's end. */
+  countdown_ends_at: string | null;
+};
+
+/** Each placement's live banners, in order: the main slider and the cards beside it on a wide screen. */
+export type ApiBanners = {
+  home_carousel: ApiBanner[];
+  home_side: ApiBanner[];
+};
+
 export type ApiUser = {
   id: string;
   name: string;

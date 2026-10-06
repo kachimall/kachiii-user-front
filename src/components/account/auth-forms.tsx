@@ -102,7 +102,7 @@ export function RegisterForm() {
       <Field label="Email" error={errors.email?.message}>
         <Input type="email" autoComplete="email" {...field("email")} />
       </Field>
-      <Field label="Mobile number (optional)" error={errors.phone?.message} hint="UAE number, e.g. 050 123 4567">
+      <Field label="Mobile number (optional)" error={errors.phone?.message} hint="e.g. 050 123 4567">
         <Input type="tel" autoComplete="tel" {...field("phone")} />
       </Field>
       <Field label="Password" error={errors.password?.message}>

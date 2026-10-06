@@ -1,5 +1,6 @@
 // Merchandising content for the home page (banners, promos, shortcuts).
-// In production this would come from a CMS or the marketing API.
+// The slider and side cards come from the admin's banners (GET /banners); these
+// slides and tiles are the fallback when there are none or the API is down.
 
 const img = (id: string) => `https://lh3.googleusercontent.com/aida-public/${id}`;
 
