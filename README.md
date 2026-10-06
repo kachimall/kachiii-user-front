@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# kachiii — storefront
 
-## Getting Started
-
-First, run the development server:
+Customer-facing shop built with Next.js 16 (App Router), TypeScript, Tailwind CSS v4 and shadcn/ui.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Concern        | Choice                                   |
+| -------------- | ---------------------------------------- |
+| Framework      | Next.js 16, React 19                     |
+| Styling        | Tailwind CSS v4, shadcn/ui (Base UI)     |
+| State          | Zustand (auth + cart), localStorage      |
+| Forms          | React Hook Form + Zod                    |
+| Toasts / icons | Sonner, lucide-react                     |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
+```
+src/
+  app/                 /, /products, /products/[id], /cart, /checkout, /checkout/payment,
+                       /checkout/success, /login, /register, /forgot-password,
+                       /reset-password, /account, /account/orders/[id]
+  components/
+    layout/            header, footer, wordmark, cart button, user menu
+    product/           product card/grid, image, price tag, add to cart
+    cart/              cart view, order summary
+    checkout/          checkout, address form, mock payment page
+    account/           sign-in/up forms, account overview, order details
+    ui/                shadcn components
+  lib/
+    api/               client.ts (fetch + envelope), schema.ts (API shapes),
+                       products.ts (catalog), account.ts (auth, cart, checkout, orders)
+    session.ts         sign-in / sign-out across the auth and cart stores
+    schemas/           Zod schemas
+    pricing.ts         AED formatting
+  store/               auth (token) and cart stores
+  types/               storefront view models
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Backend
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Data comes from the KACHI Laravel API (`../../backend/kachi`, started with its `start.bat`).
+The shop portal is `http://localhost:8000/api/v1`; set it in `.env.local` (see `.env.example`):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Catalog pages render on the server and cache API reads for a minute.
+- Auth is a Sanctum bearer token kept in localStorage. There are no cookies.
+- Guests keep their cart in this browser. The backend has no guest cart, so on
+  sign-in the lines move to the server cart.
+- Checkout needs a verified email. Delivery fees, vouchers and totals are priced by
+  `POST /checkout/preview`.
+- With the backend's mock gateway (`NOQODI_DRIVER=mock`), online payments land on
+  `/checkout/payment`, where you choose to pay or decline.
+- Demo shopper: `demo.buyer@kachi.test` / `password`. Vouchers: `WELCOME10` and
+  `DEMOSTORE20`. Emails (verification, password reset) arrive in Mailpit at
+  http://localhost:8025.

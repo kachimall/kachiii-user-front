@@ -1,0 +1,17 @@
+// Artwork for the root categories. The backend has no category images yet,
+// so the storefront keeps its own, keyed by backend slug.
+
+const img = (id: string) => `https://lh3.googleusercontent.com/aida-public/${id}`;
+
+export const categoryArt: Record<string, string> = {
+  "electronics": img("AB6AXuBhonTipwAGCzCKMn30BLbFYcd23-G8uRCUmV17eI21F7AR4blWL4n3FN0Z4qNNUzqit-2J3zTAfxjuvRYp8Hj6f4PnzTDEek9pjxs16bjXQg9Dni_q5KFC29FLDwXD5RZdk2nt_VMb2pvummVs0MPvVWpALlOXCLhetv8Vk7HKnyq5XOWkpBGoCE2yoUVQXUe8PLQIOzXRo90JgV6SCC5TdlThaLv3n4FkoTy9KIGupo9AyVpREa6f"),
+  "fashion": img("AB6AXuBDNvOW_FxJ2KWZxVA-7uDdi3VDOsCLOaVErXfqJaZesQzxthLK2hibot4bSZ6MLhbD8FRefnNT3csCWuFRVgLE0S8JjZM524J7Ku7isREsr3tSlA-fJjZSeEJ7locI0_QciRtra9o8S7rduLS_ohBBKHLhXpEG9gvxrsY8C44lr7FLZTLgdUXOYX3UfkfKjClsWYdAiqWsoVMT6izWHsucYRNpNeY5_8r2xTfie-4UWnOi5unDdcxA"),
+  "home-living": img("AB6AXuBeI7vk2daYhC3AQr36xIRaRFkMj9NQbLr6ZV8Ko8jAZ0eX8RtH7-KZ9pP1ctoLkS1l4Bv_ZsNNrV1czLyB6vG99Tm80xX46xgHuMjvAkFlCxL23O39Ke81x2et3Ov3KNBGK_UOJ3tk3JDn-pliPjpnCHVpFfBeN4B14kmlbXmkQdnGoQKUSVbic4Oe3wjjiSxU22fjCW-44htiBd_XVrWZyrejVjy4xk2jhTAHPyif2eUSvtxSN1ah"),
+  "health-beauty": img("AB6AXuCWYudud6qP3F6hZDg8YNrs8c4PIA6aHZ44dDp-afoKx-kit_mPZ0YY0pD6n4-TapOwGNR63L38mThhaZ-tbpdmSTcr6wILLuUqGU5FMKJqXX55MmKGXXhL0qhDc4f1UOOyZ8GSZTMl8-AJNxQR1nEwBPCaXQQ3qwCfvVForn5m9Yms6gXVAsMRVI4SiihoBEjuY3_MO458zwStRVjSGWM3k50zDF1GFjDfdnLwFI2rTQhuNeYVqzzk"),
+  "groceries": img("AB6AXuDxgAkFdG9S2u4MdKnllusSwBswwEA2dlMh6Rm9U0hj28fbQLACzh4WsrCr8STIUZm5S3w2lieeG6pTyXiPmK-7WxgpybRLGK-tQ3mhiYRt1AhGj_pzm8GlBqbaPISfavX3hs56HdNwGA0UaE9CdSeBdtvS7NOulC26Zd71RlPiIKV3MZ8IFo99RN4DldzACveRC0y6Prc4wq7pSm9yVTN981STjoVuEnr7WqLDKNT_c-ippkXDZI3M"),
+  "toys-kids-babies": img("AB6AXuCXlTI3a9yhCIo-0XolKb8VyUo4jpAFuAO2hfKbMSwtamRqlUa2RnnYNV8BRc7XYHVuNwzadJS_vR1mrctzdY77zUIatvY-j0vV7ULwLWoKtoIG35JFvBYImZeuINO0HDKwXXC9fdpwd5uhqwnVsWSgZ8yphlI1cHDTqVL37TAGkQavGU0NMaE0FSFglrrsfEF8qslfrrwZuq_WWO3uw21VXFiDh_0Su-qu2ILWBvc79qVxft23fNM3"),
+  "sports-outdoors": img("AB6AXuC43okX89JKUj6IINpaGE2Y8OlWog8H4PsczNB07AykFegAEW27TaTCEf3B0DZLyXIfPcz-Rrat9PSuhtE0oWBNgkTim-AzV1e2ILcQ8LFXDbqdpptn4X4D57Si99g-Tj6nGc0pH21ONlpW4CFWXfj0juIEQk_Rk6bff2F0Mq5sYgwro1_NHHUIskUPOAlR0r2U-h3RPPUrFul5JIElnHgAwx6GoWnEgleHHjJEa8hauuTAGp_t-wCZ"),
+  "dates-sweets": "/showcase/spark.jpg",
+};
+
+export const fallbackCategoryArt = "/showcase/go.jpg";
