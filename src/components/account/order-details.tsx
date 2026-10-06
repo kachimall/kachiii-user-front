@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { RefundList, ReturnCard, ReturnForm, returnable } from "@/components/account/order-returns";
 import { PackageTracking } from "@/components/account/package-tracking";
 import { formatAddress } from "@/components/checkout/address-form";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cancelPurchase, getPurchase, retryPayment } from "@/lib/api/account";
+import { cancelPurchase, getOrderReturns, getPurchase, retryPayment } from "@/lib/api/account";
 import { ApiError } from "@/lib/api/client";
 import { variantName } from "@/lib/api/products";
-import type { ApiPurchase } from "@/lib/api/schema";
+import type { ApiPurchase, ApiReturn } from "@/lib/api/schema";
 import { rememberPendingPayment } from "@/lib/payments";
 import { formatPrice } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,16 @@ export function useOrder(id: string | undefined) {
 export function OrderDetails({ id }: { id: string }) {
   const { ready, token, order, setOrder, error } = useOrder(id);
   const [busy, setBusy] = useState(false);
+  const [returns, setReturns] = useState<ApiReturn[]>([]);
+  // The package whose return form is open.
+  const [returning, setReturning] = useState<string>();
+
+  useEffect(() => {
+    if (!token) return;
+    getOrderReturns(token, id)
+      .then(setReturns)
+      .catch(() => {});
+  }, [token, id]);
 
   if (!ready) return <div aria-busy className="h-96 animate-pulse rounded-3xl bg-muted" />;
   if (!token) {
@@ -97,6 +108,7 @@ export function OrderDetails({ id }: { id: string }) {
   const awaitingPayment = order.status === "pending" && order.payment_method === "online";
   const canCancel = order.status !== "cancelled" && order.orders.every((o) => ["pending", "placed"].includes(o.status));
   const address = order.shipping_address;
+  const replaceReturn = (updated: ApiReturn) => setReturns((rs) => rs.map((r) => (r.id === updated.id ? updated : r)));
 
   return (
     <div className="flex flex-col gap-8">
@@ -157,12 +169,36 @@ export function OrderDetails({ id }: { id: string }) {
               ))}
             </ul>
             {packages.map((pkg, i) => (
-              <PackageTracking
-                key={pkg.id}
-                pkg={pkg}
-                title={packages.length > 1 ? `Package ${i + 1} of ${packages.length}` : "Delivery"}
-              />
+              <div key={pkg.id} className="flex flex-col gap-3">
+                <PackageTracking pkg={pkg} title={packages.length > 1 ? `Package ${i + 1} of ${packages.length}` : "Delivery"} />
+                {returning === pkg.id ? (
+                  <ReturnForm
+                    token={token}
+                    orderId={order.id}
+                    vendorOrder={vendorOrder}
+                    pkg={pkg}
+                    returns={returns}
+                    onCancel={() => setReturning(undefined)}
+                    onDone={(created) => {
+                      setReturns((rs) => [created, ...rs]);
+                      setReturning(undefined);
+                    }}
+                  />
+                ) : (
+                  vendorOrder.status !== "cancelled" &&
+                  returnable(pkg) && (
+                    <Button variant="outline" onClick={() => setReturning(pkg.id)} className="h-9 self-start rounded-full px-4">
+                      Return items
+                    </Button>
+                  )
+                )}
+              </div>
             ))}
+            {returns
+              .filter((r) => r.store_order.id === vendorOrder.id)
+              .map((r) => (
+                <ReturnCard key={r.id} ret={r} token={token} onChange={replaceReturn} />
+              ))}
           </section>
         );
       })}
@@ -190,6 +226,8 @@ export function OrderDetails({ id }: { id: string }) {
           </dl>
         </section>
       </div>
+
+      {order.refunds && order.refunds.length > 0 && <RefundList refunds={order.refunds} />}
     </div>
   );
 }

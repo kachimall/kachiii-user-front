@@ -198,7 +198,11 @@ export type ApiShipment = {
   max_days: number;
   shipped_at: string | null;
   delivered_at: string | null;
+  /** Until when its items can be returned; null until delivered. */
+  return_by: string | null;
+  /** Brought back undelivered by the courier, and when the sender confirmed it is back. */
   returned_at: string | null;
+  received_back_at: string | null;
   cancelled_at: string | null;
   waybill_number: string | null;
   courier_status: ApiCourierStatus | null;
@@ -226,9 +230,72 @@ export type ApiPurchase = {
   payment: { id: string; status: string; redirect_url: string | null; failure_reason: string | null } | null;
   orders: ApiVendorOrder[];
   packages: ApiShipment[];
+  /** Money owed back to the shopper, and whether it has been paid back yet. */
+  refunds?: ApiRefund[];
   placed_at: string | null;
   paid_at: string | null;
   cancelled_at: string | null;
   cancel_reason: string | null;
+  created_at: string;
+};
+
+export type ApiRefund = {
+  id: string;
+  amount: Money;
+  reason: string | null;
+  /** "pending" and "processing" until paid back ("succeeded"); "failed" waits for staff. */
+  status: "pending" | "processing" | "succeeded" | "failed";
+  refunded_at: string | null;
+  created_at: string;
+};
+
+export type ApiReturnReason = "damaged" | "defective" | "wrong_item" | "not_as_described" | "missing_parts" | "other";
+
+/** "escalated": KACHI decides. Every status but "withdrawn" holds its items. */
+export type ApiReturnStatus = "requested" | "escalated" | "approved" | "rejected" | "received" | "withdrawn";
+
+type ApiReturnAnswer = { decision: "approved" | "rejected"; remarks: string | null; decided_at: string };
+
+export type ApiReturn = {
+  id: string;
+  number: string;
+  status: ApiReturnStatus;
+  order: { id: string; number: string };
+  store_order: { id: string; number: string; store_name: string };
+  /** The package the items came in. */
+  package_id: string;
+  reason: ApiReturnReason;
+  details: string | null;
+  /** API paths (no origin); load them with the shopper's token. */
+  photos: string[];
+  items: {
+    item_id: string;
+    product_name: string;
+    sku: string;
+    options: Record<string, string>;
+    thumbnail_url: string | null;
+    quantity: number;
+    refund_amount: Money;
+  }[];
+  /** Paid back to the card when paid online; by KACHI outside the platform for cash on delivery. */
+  refund_amount: Money;
+  /** The store answers by then, or KACHI decides. */
+  reply_by: string | null;
+  store_answer: ApiReturnAnswer | null;
+  escalated_at: string | null;
+  dispute_reason: string | null;
+  /** Until when the shopper may ask KACHI to review the store's rejection; null when they cannot. */
+  dispute_by: string | null;
+  kachi_decision: ApiReturnAnswer | null;
+  pickup: {
+    waybill_number: string;
+    booked_at: string | null;
+    cancelled_at: string | null;
+    courier_status: ApiCourierStatus | null;
+    courier_status_at: string | null;
+  } | null;
+  received_at: string | null;
+  restocked: boolean | null;
+  withdrawn_at: string | null;
   created_at: string;
 };

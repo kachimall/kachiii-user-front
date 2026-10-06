@@ -68,6 +68,9 @@ function buildUrl(path: string, query?: Query) {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<Envelope<T>> {
   const { method = "GET", body, query, token, headers, revalidate, signal } = options;
 
+  // Multipart bodies (file uploads) set their own Content-Type with the boundary.
+  const multipart = body instanceof FormData;
+
   let response: Response;
   try {
     response = await fetch(buildUrl(path, query), {
@@ -75,11 +78,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       signal,
       headers: {
         Accept: "application/json",
-        ...(body !== undefined && { "Content-Type": "application/json" }),
+        ...(body !== undefined && !multipart && { "Content-Type": "application/json" }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: multipart ? body : body !== undefined ? JSON.stringify(body) : undefined,
       ...(method === "GET" && revalidate !== undefined
         ? { next: { revalidate } }
         : { cache: "no-store" as const }),
@@ -102,4 +105,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 /** Calls the API and returns just `data`. */
 export async function api<T>(path: string, options?: RequestOptions): Promise<T> {
   return (await apiRequest<T>(path, options)).data;
+}
+
+/** Loads a private file (an API path such as a return photo) with the token, as an object URL. */
+export async function apiFileUrl(path: string, token: string, signal?: AbortSignal): Promise<string> {
+  const response = await fetch(`${apiOrigin}${path}`, { headers: { Authorization: `Bearer ${token}` }, signal });
+  if (!response.ok) throw new ApiError(`Request failed (${response.status}).`, response.status);
+  return URL.createObjectURL(await response.blob());
 }

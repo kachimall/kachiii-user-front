@@ -6,6 +6,8 @@ import type {
   ApiCheckoutPreview,
   ApiPaymentMethod,
   ApiPurchase,
+  ApiReturn,
+  ApiReturnReason,
   ApiUser,
   Emirate,
 } from "@/lib/api/schema";
@@ -141,4 +143,48 @@ export function retryPayment(token: string, id: string) {
 /** Dev-only stand-in for the payment gateway (backend NOQODI_DRIVER=mock). */
 export function completeMockPayment(token: string, id: string, outcome: "paid" | "failed") {
   return api<ApiPurchase>(`/purchases/${id}/payments/mock`, { method: "POST", token, body: { outcome } });
+}
+
+// Returns: delivered items of one store's package, within the days after delivery.
+
+export const returnReasons: { value: ApiReturnReason; label: string }[] = [
+  { value: "damaged", label: "Arrived damaged" },
+  { value: "defective", label: "Does not work" },
+  { value: "wrong_item", label: "Wrong item, size or colour" },
+  { value: "not_as_described", label: "Not as described" },
+  { value: "missing_parts", label: "Parts or accessories missing" },
+  { value: "other", label: "Another reason" },
+];
+
+export type ReturnInput = {
+  items: { id: string; quantity: number }[];
+  reason: ApiReturnReason;
+  details?: string;
+  photos: File[];
+};
+
+export function getOrderReturns(token: string, orderId: string) {
+  return api<ApiReturn[]>("/returns", { token, query: { order_id: orderId, per_page: 50 } });
+}
+
+/** Sent as multipart form data, for the photos. */
+export function requestReturn(token: string, orderId: string, input: ReturnInput) {
+  const body = new FormData();
+  input.items.forEach((item, i) => {
+    body.append(`items[${i}][id]`, item.id);
+    body.append(`items[${i}][quantity]`, String(item.quantity));
+  });
+  body.append("reason", input.reason);
+  if (input.details) body.append("details", input.details);
+  input.photos.forEach((photo) => body.append("photos[]", photo));
+  return api<ApiReturn>(`/purchases/${orderId}/returns`, { method: "POST", token, body });
+}
+
+/** Asks KACHI to review the store's rejection; KACHI's decision is final. */
+export function escalateReturn(token: string, id: string, reason?: string) {
+  return api<ApiReturn>(`/returns/${id}/escalate`, { method: "POST", token, body: { reason } });
+}
+
+export function withdrawReturn(token: string, id: string) {
+  return api<ApiReturn>(`/returns/${id}/withdraw`, { method: "POST", token, body: {} });
 }
