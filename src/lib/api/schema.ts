@@ -151,6 +151,7 @@ export type ApiPaymentMethod = "online" | "cash_on_delivery";
 
 export type ApiOrderItem = {
   id: string;
+  package_id: string | null;
   product: { id: string; name: string };
   variant: { id: string; sku: string; options: Record<string, string> };
   thumbnail_url: string | null;
@@ -163,7 +164,7 @@ export type ApiOrderItem = {
 export type ApiVendorOrder = {
   id: string;
   number: string;
-  status: "pending" | "placed" | "accepted" | "ready_to_ship" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "placed" | "accepted" | "ready_to_ship" | "shipped" | "delivered" | "returned" | "cancelled";
   store: ApiRef;
   items_total: Money;
   discount_total: Money;
@@ -171,8 +172,40 @@ export type ApiVendorOrder = {
   placed_at: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
+  returned_at: string | null;
   cancelled_at: string | null;
   cancel_reason: string | null;
+};
+
+/** What the courier (Zajel) reports; not one-way: a failed attempt goes back out for delivery. */
+export type ApiCourierStatus =
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivery_failed"
+  | "delivered"
+  | "returned";
+
+export type ApiShipment = {
+  id: string;
+  fulfiller: "vendor" | "provider";
+  status: "pending" | "processing" | "ready" | "shipped" | "delivered" | "returned" | "cancelled";
+  /** The store's order whose items travel in it; null for the provider's package. */
+  order_id: string | null;
+  service: { code: string; name: string };
+  fee: Money;
+  min_days: number;
+  max_days: number;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  returned_at: string | null;
+  cancelled_at: string | null;
+  waybill_number: string | null;
+  courier_status: ApiCourierStatus | null;
+  /** Null when the order was paid online. */
+  cash_on_delivery: { amount: Money; status: "pending" | "collected" | "not_collected"; collected_at: string | null } | null;
+  /** Courier updates, oldest first. */
+  tracking?: { status: ApiCourierStatus; description: string | null; reason: string | null; occurred_at: string }[];
 };
 
 export type ApiPurchase = {
@@ -192,6 +225,7 @@ export type ApiPurchase = {
   pay_by: string | null;
   payment: { id: string; status: string; redirect_url: string | null; failure_reason: string | null } | null;
   orders: ApiVendorOrder[];
+  packages: ApiShipment[];
   placed_at: string | null;
   paid_at: string | null;
   cancelled_at: string | null;

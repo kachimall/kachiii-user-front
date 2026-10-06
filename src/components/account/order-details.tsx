@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PackageTracking } from "@/components/account/package-tracking";
 import { formatAddress } from "@/components/checkout/address-form";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export const orderStatusLabel: Record<string, string> = {
   ready_to_ship: "Ready to ship",
   shipped: "On the way",
   delivered: "Delivered",
+  returned: "Returned",
   cancelled: "Cancelled",
 };
 
@@ -125,33 +127,45 @@ export function OrderDetails({ id }: { id: string }) {
         </div>
       )}
 
-      {order.orders.map((vendorOrder) => (
-        <section key={vendorOrder.id} className="flex flex-col gap-3 rounded-3xl border bg-card p-6">
-          <header className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-heading text-lg font-bold">{vendorOrder.store.name}</h2>
-            <span className="text-sm text-muted-foreground">
-              {vendorOrder.number} · {orderStatusLabel[vendorOrder.status] ?? vendorOrder.status}
-            </span>
-          </header>
-          {vendorOrder.cancel_reason && <p className="text-sm text-destructive">{vendorOrder.cancel_reason}</p>}
-          <ul className="flex flex-col divide-y">
-            {vendorOrder.items.map((item) => (
-              <li key={item.id} className="flex items-center gap-4 py-3">
-                <Link href={`/products/${item.product.id}`} className="w-16 shrink-0">
-                  <ProductImage name={item.product.name} image={item.thumbnail_url ?? undefined} sizes="64px" />
-                </Link>
-                <div className="flex-1 text-sm">
-                  <p className="font-medium">{item.product.name}</p>
-                  <p className="text-muted-foreground">
-                    {variantName(item.variant.options)} · {item.quantity} × {formatPrice(item.unit_price)}
-                  </p>
-                </div>
-                <p className="text-sm tabular-nums">{formatPrice(item.line_total)}</p>
-              </li>
+      {order.orders.map((vendorOrder) => {
+        // The packages this store's items travel in (usually one).
+        const packageIds = new Set(vendorOrder.items.map((i) => i.package_id));
+        const packages = (order.packages ?? []).filter((p) => packageIds.has(p.id) || p.order_id === vendorOrder.id);
+        return (
+          <section key={vendorOrder.id} className="flex flex-col gap-3 rounded-3xl border bg-card p-6">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-heading text-lg font-bold">{vendorOrder.store.name}</h2>
+              <span className="text-sm text-muted-foreground">
+                {vendorOrder.number} · {orderStatusLabel[vendorOrder.status] ?? vendorOrder.status}
+              </span>
+            </header>
+            {vendorOrder.cancel_reason && <p className="text-sm text-destructive">{vendorOrder.cancel_reason}</p>}
+            <ul className="flex flex-col divide-y">
+              {vendorOrder.items.map((item) => (
+                <li key={item.id} className="flex items-center gap-4 py-3">
+                  <Link href={`/products/${item.product.id}`} className="w-16 shrink-0">
+                    <ProductImage name={item.product.name} image={item.thumbnail_url ?? undefined} sizes="64px" />
+                  </Link>
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium">{item.product.name}</p>
+                    <p className="text-muted-foreground">
+                      {variantName(item.variant.options)} · {item.quantity} × {formatPrice(item.unit_price)}
+                    </p>
+                  </div>
+                  <p className="text-sm tabular-nums">{formatPrice(item.line_total)}</p>
+                </li>
+              ))}
+            </ul>
+            {packages.map((pkg, i) => (
+              <PackageTracking
+                key={pkg.id}
+                pkg={pkg}
+                title={packages.length > 1 ? `Package ${i + 1} of ${packages.length}` : "Delivery"}
+              />
             ))}
-          </ul>
-        </section>
-      ))}
+          </section>
+        );
+      })}
 
       <div className="grid gap-6 sm:grid-cols-2">
         {address && (
