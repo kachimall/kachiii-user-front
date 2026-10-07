@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Kachi design tokens (see DESIGN.md from the design handoff). */
+/* Kachiii design tokens (see DESIGN.md from the design handoff). */
 @theme {
   --color-surface: #f7f9fc;
   --color-surface-container-lowest: #ffffff;

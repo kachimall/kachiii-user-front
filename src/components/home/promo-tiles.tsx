@@ -14,7 +14,7 @@ export function PromoTiles() {
         <div className="flex items-start justify-between gap-1.5">
           <div>
             <div className="mb-1 flex items-center gap-1">
-              <span className="rounded-sm bg-secondary px-1.5 py-0.5 text-label-xs text-white uppercase">Kachi Mall</span>
+              <span className="rounded-sm bg-secondary px-1.5 py-0.5 text-label-xs text-white uppercase">Kachiii Mall</span>
               <span className="flex items-center gap-0.5 text-label-xs text-secondary">
                 <BadgeCheckIcon aria-hidden className="size-3.5" />
                 100% Authentic

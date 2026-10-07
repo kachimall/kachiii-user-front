@@ -14,7 +14,7 @@ export function Logo({ className, showMall = true, collapse = false }: Props) {
         K
       </span>
       <span className={cn("font-heading text-headline-md font-extrabold tracking-tight text-secondary", collapse && "hidden sm:inline")}>
-        KACHI
+        KACHIII
       </span>
       {showMall && (
         <span

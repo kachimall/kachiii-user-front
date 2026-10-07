@@ -64,7 +64,7 @@ export function LoginForm() {
         {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        New to Kachi?{" "}
+        New to Kachiii?{" "}
         <Link href={`/register?next=${encodeURIComponent(next)}`} className="font-medium text-primary hover:underline">
           Create an account
         </Link>
@@ -86,7 +86,7 @@ export function RegisterForm() {
   async function onSubmit(values: RegisterValues) {
     try {
       await startSession(await register({ ...values, phone: values.phone || undefined }));
-      toast.success("Welcome to Kachi!", { description: "We’ve emailed you a link to verify your address." });
+      toast.success("Welcome to Kachiii!", { description: "We’ve emailed you a link to verify your address." });
       router.replace(next);
       router.refresh();
     } catch (error) {

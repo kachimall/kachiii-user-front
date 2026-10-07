@@ -20,7 +20,7 @@ const MAX_PHOTOS = 5;
 
 const returnStatusLabel: Record<ApiReturn["status"], string> = {
   requested: "Waiting for the store",
-  escalated: "KACHI is reviewing",
+  escalated: "KACHIII is reviewing",
   approved: "Approved",
   rejected: "Rejected",
   received: "Items received back",
@@ -367,14 +367,14 @@ export function ReturnCard({ ret, token, onChange }: { ret: ApiReturn; token: st
 
       {answer && (
         <p className={cn(answer.decision === "rejected" ? "text-destructive" : "text-success")}>
-          {ret.kachi_decision ? "KACHI" : "The store"} {answer.decision} this return
+          {ret.kachi_decision ? "KACHIII" : "The store"} {answer.decision} this return
           {answer.remarks && <span className="text-muted-foreground">: {answer.remarks}</span>}
         </p>
       )}
 
       {disputing && (
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`dispute-${ret.id}`}>Why should KACHI take another look? (optional)</Label>
+          <Label htmlFor={`dispute-${ret.id}`}>Why should KACHIII take another look? (optional)</Label>
           <Textarea
             id={`dispute-${ret.id}`}
             maxLength={500}
@@ -391,14 +391,14 @@ export function ReturnCard({ ret, token, onChange }: { ret: ApiReturn; token: st
             (disputing ? (
               <Button
                 disabled={busy}
-                onClick={() => act(() => escalateReturn(token, ret.id, disputeReason.trim() || undefined), "Sent to KACHI for review")}
+                onClick={() => act(() => escalateReturn(token, ret.id, disputeReason.trim() || undefined), "Sent to KACHIII for review")}
                 className="h-9 rounded-full px-4"
               >
-                Send to KACHI
+                Send to KACHIII
               </Button>
             ) : (
               <Button disabled={busy} onClick={() => setDisputing(true)} className="h-9 rounded-full px-4">
-                Ask KACHI to review
+                Ask KACHIII to review
               </Button>
             ))}
           {canDispute && !disputing && ret.dispute_by && (

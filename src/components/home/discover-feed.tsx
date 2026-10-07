@@ -19,7 +19,7 @@ type Tab = {
 const tabs: Tab[] = [
   { id: "discover", label: "Daily Discover", select: (p) => p },
   { id: "lowest", label: "Lowest Prices", select: (p) => [...p].sort((a, b) => a.price - b.price) },
-  { id: "mall", label: "Kachi Mall Exclusives", mall: true, select: (p) => p.filter((x) => x.storeTier === "mall") },
+  { id: "mall", label: "Kachiii Mall Exclusives", mall: true, select: (p) => p.filter((x) => x.storeTier === "mall") },
   { id: "under-100", label: "Under AED 100", select: (p) => p.filter((x) => x.price < 100) },
   { id: "in-stock", label: "Ready to Ship", select: (p) => p.filter((x) => x.inStock) },
 ];

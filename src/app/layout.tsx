@@ -21,8 +21,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kachi Mall — Flash deals, vouchers and official brands",
-    template: "%s · Kachi Mall",
+    default: "Kachiii Mall — Flash deals, vouchers and official brands",
+    template: "%s · Kachiii Mall",
   },
   description:
     "Shop flash deals, daily vouchers and 100% authentic brands across electronics, beauty, fashion and home.",

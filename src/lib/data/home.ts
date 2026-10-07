@@ -17,7 +17,7 @@ export const trendingSearches = [
 
 export const mainNav = [
   { label: "Flash Deals", href: "/" },
-  { label: "Kachi Mall", href: "/products" },
+  { label: "Kachiii Mall", href: "/products" },
   { label: "Super Brand Day", href: "/products" },
   { label: "Global Express", href: "/products" },
   { label: "Vouchers & Rewards", href: "/#vouchers" },
@@ -57,7 +57,7 @@ export const heroSlides: HeroSlide[] = [
     title: "Official Brands, Mall Prices",
     body: "Shop verified flagship stores with 15-day free returns and",
     highlight: "zero fake guarantee.",
-    cta: { label: "Shop Kachi Mall", href: "/products" },
+    cta: { label: "Shop Kachiii Mall", href: "/products" },
     image: img(
       "AB6AXuA1ZtBbLOlZK900XLV2XVu3uVtqvwqSMv0JVo_ziOYPexLnoWWfWtmBefMSyw9D_JtZl8YpIofAppfgve5pc_Tz9Frrn4A_Bj5xRquAb5s38gHPFGMOx6gIcsQUfCROS1sJVaPh8-uyoM8exyJC-3eyjGKKGwJ-YMxUZ0EWVSp3LTeqBYwnGj8ii2zNWmFz8t_WeBXrF1fM6xAz-8OJdjrm0aHB4LjcMGb7DD7GQqcyP7dyOfLHpmM_",
     ),

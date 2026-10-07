@@ -213,7 +213,7 @@ export function CheckoutForm() {
             <Step n={2}>Delivery</Step>
             {preview.packages.map((pkg) => (
               <div key={pkg.key} className="flex flex-col gap-3 rounded-lg border border-surface-container-highest p-4">
-                <p className="text-sm font-medium">{pkg.store?.name ?? "Kachi fulfilment"}</p>
+                <p className="text-sm font-medium">{pkg.store?.name ?? "Kachiii fulfilment"}</p>
                 <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
                   {pkg.items.map((i) => (
                     <li key={i.id}>

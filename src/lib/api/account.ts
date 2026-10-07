@@ -180,7 +180,7 @@ export function requestReturn(token: string, orderId: string, input: ReturnInput
   return api<ApiReturn>(`/purchases/${orderId}/returns`, { method: "POST", token, body });
 }
 
-/** Asks KACHI to review the store's rejection; KACHI's decision is final. */
+/** Asks KACHIII to review the store's rejection; KACHIII's decision is final. */
 export function escalateReturn(token: string, id: string, reason?: string) {
   return api<ApiReturn>(`/returns/${id}/escalate`, { method: "POST", token, body: { reason } });
 }

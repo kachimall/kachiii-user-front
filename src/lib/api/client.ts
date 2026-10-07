@@ -1,4 +1,4 @@
-// Thin fetch wrapper for the KACHI shop API (Laravel, Sanctum bearer tokens).
+// Thin fetch wrapper for the KACHIII shop API (Laravel, Sanctum bearer tokens).
 // Every response uses one envelope: { success, message, data, meta } on success,
 // { success: false, message, errors } on failure.
 
@@ -96,7 +96,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         : { cache: "no-store" as const }),
     });
   } catch {
-    throw new ApiError("Can’t reach the Kachi servers. Check your connection and try again.", 0);
+    throw new ApiError("Can’t reach the Kachiii servers. Check your connection and try again.", 0);
   }
 
   const payload = await response.json().catch(() => null);

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ShieldCheckIcon, ShieldIcon, TruckIcon } from "lucide-react";
 
-const customerCare = ["Help Center", "How to Buy", "Shipping & Delivery", "Returns & Refunds", "Kachi Guarantee", "Contact Us"];
-const about = ["About Us", "Kachi Careers", "Kachi Policies", "Privacy Policy", "Flash Deals Guide"];
+const customerCare = ["Help Center", "How to Buy", "Shipping & Delivery", "Returns & Refunds", "Kachiii Guarantee", "Contact Us"];
+const about = ["About Us", "Kachiii Careers", "Kachiii Policies", "Privacy Policy", "Flash Deals Guide"];
 const chip = "flex h-8 items-center justify-center gap-1 rounded-md border border-surface-variant bg-surface-container-lowest px-2 shadow-sm";
 
 function LinkList({ title, items }: { title: string; items: string[] }) {
@@ -28,7 +28,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-3 py-6 md:px-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <LinkList title="Customer Care" items={customerCare} />
-          <LinkList title="About Kachi" items={about} />
+          <LinkList title="About Kachiii" items={about} />
 
           <div className="flex flex-col gap-2.5">
             <h2 className="font-heading text-headline-sm">Payment Partners</h2>
@@ -59,7 +59,7 @@ export function SiteFooter() {
               <li className={chip}><span className="font-extrabold text-[#E60012] italic">J&amp;T</span><span className="text-[9px] font-semibold text-on-surface-variant">Express</span></li>
               <li className={`${chip} border-secondary/20 bg-secondary-fixed text-secondary`}>
                 <TruckIcon aria-hidden className="size-3.5" />
-                Kachi Express
+                Kachiii Express
               </li>
             </ul>
           </div>
@@ -85,7 +85,7 @@ export function SiteFooter() {
 
         <div className="mt-6 flex flex-col items-center justify-between gap-2.5 pt-4 md:flex-row">
           <p className="text-center text-body-sm text-on-surface-variant md:text-left">
-            © {new Date().getFullYear()} Kachi E-Commerce UAE. All rights reserved. Country &amp; Region: United Arab
+            © {new Date().getFullYear()} Kachiii E-Commerce UAE. All rights reserved. Country &amp; Region: United Arab
             Emirates.
           </p>
           <ul className="flex items-center gap-2.5 text-label-xs text-on-surface-variant">

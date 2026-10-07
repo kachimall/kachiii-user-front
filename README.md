@@ -45,7 +45,7 @@ src/
 
 ## Backend
 
-Data comes from the KACHI Laravel API (`../../backend/kachi`, started with its `start.bat`).
+Data comes from the KACHIII Laravel API (`../../backend/kachi`, started with its `start.bat`).
 The shop portal is `http://localhost:8000/api/v1`; set it in `.env.local` (see `.env.example`):
 
 ```

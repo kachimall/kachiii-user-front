@@ -12,7 +12,7 @@ import { useCart } from "@/store/cart";
 export async function startSession(result: ApiAuthResult) {
   if ("two_factor" in result) {
     // Two-factor sign-in only applies to staff accounts, which can't shop.
-    throw new ApiError("This account signs in through the Kachi admin portal.", 403);
+    throw new ApiError("This account signs in through the Kachiii admin portal.", 403);
   }
   useAuth.getState().setSession(result.token, result.user, result.expires_at);
   await useCart.getState().mergeIntoServer();

@@ -1,4 +1,4 @@
-// Response shapes of the KACHI shop API, as the Laravel API resources send them.
+// Response shapes of the KACHIII shop API, as the Laravel API resources send them.
 // Money is a decimal string ("158.00"); ids are ULIDs; image URLs are absolute or null.
 
 export type Money = string;
@@ -273,7 +273,7 @@ export type ApiRefund = {
 
 export type ApiReturnReason = "damaged" | "defective" | "wrong_item" | "not_as_described" | "missing_parts" | "other";
 
-/** "escalated": KACHI decides. Every status but "withdrawn" holds its items. */
+/** "escalated": KACHIII decides. Every status but "withdrawn" holds its items. */
 export type ApiReturnStatus = "requested" | "escalated" | "approved" | "rejected" | "received" | "withdrawn";
 
 type ApiReturnAnswer = { decision: "approved" | "rejected"; remarks: string | null; decided_at: string };
@@ -299,14 +299,14 @@ export type ApiReturn = {
     quantity: number;
     refund_amount: Money;
   }[];
-  /** Paid back to the card when paid online; by KACHI outside the platform for cash on delivery. */
+  /** Paid back to the card when paid online; by KACHIII outside the platform for cash on delivery. */
   refund_amount: Money;
-  /** The store answers by then, or KACHI decides. */
+  /** The store answers by then, or KACHIII decides. */
   reply_by: string | null;
   store_answer: ApiReturnAnswer | null;
   escalated_at: string | null;
   dispute_reason: string | null;
-  /** Until when the shopper may ask KACHI to review the store's rejection; null when they cannot. */
+  /** Until when the shopper may ask KACHIII to review the store's rejection; null when they cannot. */
   dispute_by: string | null;
   kachi_decision: ApiReturnAnswer | null;
   pickup: {

@@ -46,7 +46,7 @@ export async function SiteHeader() {
             <li>
               <a href={SELLER_URL} className={utilityLink}>
                 <StoreIcon aria-hidden className="size-3.5" />
-                Sell on Kachi
+                Sell on Kachiii
               </a>
             </li>
             <li aria-hidden className="h-3 w-px bg-white/30" />
@@ -68,7 +68,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-3 py-2 md:gap-6 md:px-6 md:py-2.5 lg:h-19 lg:gap-10">
         <Link
           href="/"
-          aria-label="Kachi Mall home"
+          aria-label="Kachiii Mall home"
           className="shrink-0 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Logo collapse />

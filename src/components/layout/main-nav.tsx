@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const navIcon: Record<string, LucideIcon> = {
   "Flash Deals": FlameIcon,
-  "Kachi Mall": BadgeCheckIcon,
+  "Kachiii Mall": BadgeCheckIcon,
   "Super Brand Day": SparklesIcon,
   "Global Express": GlobeIcon,
   "Vouchers & Rewards": TicketIcon,
