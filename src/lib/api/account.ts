@@ -4,10 +4,13 @@ import type {
   ApiAuthResult,
   ApiCart,
   ApiCheckoutPreview,
+  ApiConversation,
+  ApiMessage,
   ApiPaymentMethod,
   ApiPurchase,
   ApiReturn,
   ApiReturnReason,
+  ApiReview,
   ApiUser,
   Emirate,
 } from "@/lib/api/schema";
@@ -16,8 +19,14 @@ import type {
 
 const DEVICE = "kachi-storefront";
 
-export function login(email: string, password: string) {
-  return api<ApiAuthResult>("/auth/login", { method: "POST", body: { email, password, device_name: DEVICE } });
+// Sign-up, login and password reset carry Cloudflare Turnstile's token while the backend has
+// bot protection on; without a site key the widget is skipped and the token left out.
+
+export function login(email: string, password: string, turnstileToken?: string) {
+  return api<ApiAuthResult>("/auth/login", {
+    method: "POST",
+    body: { email, password, device_name: DEVICE, turnstile_token: turnstileToken },
+  });
 }
 
 export type RegisterInput = {
@@ -26,6 +35,7 @@ export type RegisterInput = {
   phone?: string;
   password: string;
   password_confirmation: string;
+  turnstile_token?: string;
 };
 
 export function register(input: RegisterInput) {
@@ -44,8 +54,13 @@ export function resendVerification(token: string) {
   return api<null>("/auth/email/verification-notification", { method: "POST", token });
 }
 
-export function forgotPassword(email: string) {
-  return api<null>("/auth/forgot-password", { method: "POST", body: { email } });
+/** Confirms the email from a verification link's signed `id`, `hash`, `expires` and `signature`. */
+export async function verifyEmail(id: string, hash: string, query: { expires: string; signature: string }) {
+  return (await apiRequest<null>(`/auth/email/verify/${encodeURIComponent(id)}/${encodeURIComponent(hash)}`, { query })).message;
+}
+
+export function forgotPassword(email: string, turnstileToken?: string) {
+  return api<null>("/auth/forgot-password", { method: "POST", body: { email, turnstile_token: turnstileToken } });
 }
 
 export function resetPassword(body: { token: string; email: string; password: string; password_confirmation: string }) {
@@ -187,4 +202,71 @@ export function escalateReturn(token: string, id: string, reason?: string) {
 
 export function withdrawReturn(token: string, id: string) {
   return api<ApiReturn>(`/returns/${id}/withdraw`, { method: "POST", token, body: {} });
+}
+
+// Reviews: once per item the shopper received.
+
+export const MAX_REVIEW_PHOTOS = 3;
+
+export type ReviewInput = { itemId: string; rating: number; comment?: string; photos: File[] };
+
+/** Sent as multipart form data, for the photos. 409 when the item wasn't delivered or is reviewed already. */
+export function createReview(token: string, orderId: string, input: ReviewInput) {
+  const body = new FormData();
+  body.append("item_id", input.itemId);
+  body.append("rating", String(input.rating));
+  if (input.comment) body.append("comment", input.comment);
+  input.photos.forEach((photo) => body.append("photos[]", photo));
+  return api<ApiReview>(`/purchases/${orderId}/reviews`, { method: "POST", token, body });
+}
+
+export function getMyReviews(token: string, page = 1, perPage = 20) {
+  return apiRequest<ApiReview[]>("/account/reviews", { token, query: { page, per_page: perPage } });
+}
+
+// Messages with stores: one conversation per store, started by the shopper's first message.
+// Writing needs a verified email (403 otherwise).
+
+export const MAX_MESSAGE_PHOTOS = 5;
+export const MAX_MESSAGE_LENGTH = 2000;
+
+export type MessageInput = { body?: string; photos: File[] };
+
+function messageForm({ body, photos }: MessageInput) {
+  const form = new FormData();
+  if (body) form.append("body", body);
+  photos.forEach((photo) => form.append("photos[]", photo));
+  return form;
+}
+
+/** `meta.unread_total` counts every message the shopper hasn't read. */
+export function getConversations(token: string, query: { store?: string; page?: number; perPage?: number } = {}) {
+  return apiRequest<ApiConversation[]>("/conversations", {
+    token,
+    query: { store: query.store, page: query.page, per_page: query.perPage },
+  });
+}
+
+export function getConversation(token: string, id: string) {
+  return api<ApiConversation>(`/conversations/${id}`, { token });
+}
+
+/** Newest first; `before` (a message id) pages back to older ones. */
+export function getMessages(token: string, id: string, before?: string, perPage = 30) {
+  return apiRequest<ApiMessage[]>(`/conversations/${id}/messages`, { token, query: { before, per_page: perPage } });
+}
+
+/** Messages a store; the first message starts the conversation, later ones join it. */
+export function startConversation(token: string, storeId: string, input: MessageInput) {
+  const form = messageForm(input);
+  form.append("store_id", storeId);
+  return api<ApiConversation>("/conversations", { method: "POST", token, body: form });
+}
+
+export function sendMessage(token: string, id: string, input: MessageInput) {
+  return api<ApiMessage>(`/conversations/${id}/messages`, { method: "POST", token, body: messageForm(input) });
+}
+
+export function markConversationRead(token: string, id: string) {
+  return api<ApiConversation>(`/conversations/${id}/read`, { method: "POST", token });
 }

@@ -420,18 +420,26 @@ export function ReturnCard({ ret, token, onChange }: { ret: ApiReturn; token: st
   );
 }
 
-/** Money owed back to the shopper on this order. */
-export function RefundList({ refunds }: { refunds: ApiRefund[] }) {
+/**
+ * Money owed back to the shopper on this order: to the card for an online payment, or paid
+ * back by KACHIII itself for cash on delivery.
+ */
+export function RefundList({ refunds, cashOnDelivery = false }: { refunds: ApiRefund[]; cashOnDelivery?: boolean }) {
   return (
     <section className="rounded-lg bg-surface-container-lowest shadow-card p-4 md:p-5 text-sm">
-      <h2 className="mb-2 font-heading text-lg font-bold">Refunds</h2>
+      <h2 className="mb-1 font-heading text-lg font-bold">Refunds</h2>
+      <p className="mb-2 text-muted-foreground">
+        {cashOnDelivery
+          ? "You paid cash on delivery, so KACHIII pays these back to you directly."
+          : "Paid back to the card you paid with."}
+      </p>
       <ul className="flex flex-col divide-y">
         {refunds.map((refund) => (
           <li key={refund.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
             <div>
               <p>{refund.reason ?? "Refund"}</p>
               <p className="text-muted-foreground">
-                {refundStatusLabel[refund.status]}
+                {refund.status === "succeeded" && cashOnDelivery ? "Paid back by KACHIII" : refundStatusLabel[refund.status]}
                 {refund.refunded_at && ` · ${formatDate(refund.refunded_at)}`}
               </p>
             </div>

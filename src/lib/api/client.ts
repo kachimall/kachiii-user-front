@@ -31,7 +31,8 @@ export type ApiMeta = {
   fuzzy?: boolean;
 };
 
-type Envelope<T> = { success: true; message: string; data: T; meta: ApiMeta };
+// Some endpoints add their own `meta` keys (a product's rating summary, unread messages).
+type Envelope<T> = { success: true; message: string; data: T; meta: ApiMeta & { [key: string]: unknown } };
 
 export class ApiError extends Error {
   constructor(
@@ -60,6 +61,8 @@ export type RequestOptions = {
   /** Server-side caching for catalog reads; ignored in the browser. */
   revalidate?: number | false;
   signal?: AbortSignal;
+  /** Lets the request finish after the page navigates away (e.g. counting an ad tap). */
+  keepalive?: boolean;
 };
 
 function buildUrl(path: string, query?: Query) {
@@ -74,7 +77,7 @@ function buildUrl(path: string, query?: Query) {
 
 /** Calls the API and returns the whole envelope (use when you need `meta`). */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<Envelope<T>> {
-  const { method = "GET", body, query, token, headers, revalidate, signal } = options;
+  const { method = "GET", body, query, token, headers, revalidate, signal, keepalive } = options;
 
   // Multipart bodies (file uploads) set their own Content-Type with the boundary.
   const multipart = body instanceof FormData;
@@ -84,6 +87,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     response = await fetch(buildUrl(path, query), {
       method,
       signal,
+      keepalive,
       headers: {
         Accept: "application/json",
         ...(body !== undefined && !multipart && { "Content-Type": "application/json" }),

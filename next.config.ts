@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Search engines read robots.txt and the sitemaps at the shop's root; the backend writes them
+  // (keeping a test server out of search, listing every product, category, store and page).
+  async rewrites() {
+    const backend = api.href.replace(/\/$/, "");
+    return [
+      { source: "/robots.txt", destination: `${backend}/robots.txt` },
+      { source: "/sitemap.xml", destination: `${backend}/sitemap.xml` },
+      { source: "/sitemap-pages.xml", destination: `${backend}/sitemap-pages.xml` },
+      { source: "/sitemap-products-:page(\\d+).xml", destination: `${backend}/sitemap-products-:page.xml` },
+    ];
+  },
   images: {
     // Banner and category art from the design handoff, plus product, category and banner
     // photos from the backend's /storage or the R2 media domain (rendered unoptimized, see isApiImage).

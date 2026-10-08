@@ -1,7 +1,7 @@
 import { ApiError, api } from "@/lib/api/client";
-import type { ApiCategory, ApiProduct, ApiProductCard, ApiVariant } from "@/lib/api/schema";
+import type { ApiCategory, ApiProduct, ApiProductCard, ApiRating, ApiSeo, ApiStore, ApiVariant } from "@/lib/api/schema";
 import { categoryArt, fallbackCategoryArt } from "@/lib/data/category-art";
-import type { Category, Product, ProductQuery, ProductSort, ProductVariant } from "@/types";
+import type { Category, Product, ProductQuery, ProductSort, ProductVariant, Store } from "@/types";
 
 // Catalog reads from the shop API. Server components cache them for a minute;
 // in the browser `revalidate` is ignored.
@@ -11,15 +11,28 @@ const apiSort: Record<ProductSort, string> = {
   newest: "newest",
   "price-asc": "price_asc",
   "price-desc": "price_desc",
+  rating: "rating",
+  "best-selling": "best_selling",
 };
 
 const num = (value: string | null | undefined) => (value == null ? undefined : Number(value));
 
 function toCategory(c: ApiCategory): Category {
-  return { id: c.id, slug: c.slug, name: c.name, image: c.image_url ?? categoryArt[c.slug] ?? fallbackCategoryArt };
+  return {
+    id: c.id,
+    slug: c.slug,
+    name: c.name,
+    image: c.image_url ?? categoryArt[c.slug] ?? fallbackCategoryArt,
+    description: c.seo?.description,
+  };
 }
 
-function toCard(p: ApiProductCard): Product {
+/** The average as a number, or undefined until the first review. */
+export function ratingOf(rating: ApiRating | undefined): number | undefined {
+  return rating?.average == null ? undefined : Number(rating.average);
+}
+
+export function toCard(p: ApiProductCard): Product {
   return {
     id: p.id,
     slug: p.slug,
@@ -29,7 +42,10 @@ function toCard(p: ApiProductCard): Product {
     images: p.thumbnail_url ? [p.thumbnail_url] : [],
     variants: [],
     inStock: p.in_stock,
-    store: { name: p.store.name, slug: p.store.slug },
+    rating: ratingOf(p.rating),
+    ratingCount: p.rating?.count,
+    soldCount: p.sold_count,
+    store: { id: p.store.id, name: p.store.name, slug: p.store.slug },
     perks: [],
   };
 }
@@ -92,13 +108,24 @@ export async function getCategory(slug: string): Promise<Category | undefined> {
   return category && toCategory(category);
 }
 
+export async function getBrand(slug: string): Promise<{ name: string; slug: string } | undefined> {
+  return orUndefined(api<{ name: string; slug: string }>(`/brands/${encodeURIComponent(slug)}`, { revalidate: 300 }));
+}
+
 export async function getProducts(query: ProductQuery = {}): Promise<Product[]> {
-  const { category, q, sort = "newest", minPrice, maxPrice, limit = 60 } = query;
-  const filters = { category, min_price: minPrice, max_price: maxPrice, per_page: limit };
+  const { category, store, brand, q, sort = "newest", minPrice, maxPrice, limit = 60 } = query;
+  const filters = {
+    category,
+    store,
+    brands: brand ? [brand] : undefined,
+    min_price: minPrice,
+    max_price: maxPrice,
+    per_page: limit,
+  };
 
   const cards = q
     ? await api<ApiProductCard[]>("/products/search", {
-        // Searches rank by relevance unless the shopper picks a price sort.
+        // Searches rank by relevance unless the shopper picks another sort.
         query: { ...filters, q, sort: sort === "newest" ? undefined : apiSort[sort] },
         revalidate: CATALOG_TTL,
       })
@@ -119,9 +146,49 @@ export async function getRecommendedProducts(): Promise<Product[]> {
   return getProducts({ sort: "newest", limit: 30 });
 }
 
-export async function getProduct(id: string): Promise<Product | undefined> {
+/**
+ * The product's id from its page's path segment: the bare ULID, or the "{slug}-{ULID}" form
+ * search engines are given (the backend's canonical address).
+ */
+export function productIdFrom(segment: string): string {
+  return decodeURIComponent(segment).match(/[0-9A-HJKMNP-TV-Z]{26}$/i)?.[0] ?? segment;
+}
+
+/** The product page's path, in the canonical "{slug}-{id}" form. */
+export const productPath = (p: { id: string; slug: string }) => (p.slug ? `/products/${p.slug}-${p.id}` : `/products/${p.id}`);
+
+/** The product with its search-engine details. */
+export async function getProductWithSeo(segment: string): Promise<{ product: Product; seo?: ApiProduct["seo"] } | undefined> {
+  const id = productIdFrom(segment);
   const product = await orUndefined(api<ApiProduct>(`/products/${encodeURIComponent(id)}`, { revalidate: CATALOG_TTL }));
-  return product && toProduct(product);
+  return product && { product: toProduct(product), seo: product.seo };
+}
+
+export async function getProduct(segment: string): Promise<Product | undefined> {
+  return (await getProductWithSeo(segment))?.product;
+}
+
+function toStore(s: ApiStore): Store {
+  return {
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    description: s.description ?? undefined,
+    logo: s.logo_url ?? undefined,
+    banner: s.banner_url ?? undefined,
+    rating: ratingOf(s.rating),
+    ratingCount: s.rating?.count ?? 0,
+    productCount: s.products_count,
+    joinedAt: s.joined_at ?? undefined,
+    contactEmail: s.contact_email ?? undefined,
+    contactPhone: s.contact_phone ?? undefined,
+    policies: s.policies?.trim() || undefined,
+  };
+}
+
+export async function getStore(slug: string): Promise<{ store: Store; seo?: ApiSeo } | undefined> {
+  const store = await orUndefined(api<ApiStore>(`/stores/${encodeURIComponent(slug)}`, { revalidate: 300 }));
+  return store && { store: toStore(store), seo: store.seo };
 }
 
 export async function getRelatedProducts(product: Product, limit = 5): Promise<Product[]> {

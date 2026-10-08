@@ -14,6 +14,7 @@ import {
 import { CartButton } from "@/components/layout/cart-button";
 import { Logo } from "@/components/layout/logo";
 import { MainNav } from "@/components/layout/main-nav";
+import { SearchSuggestInput } from "@/components/layout/search-suggest-input";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCategories } from "@/lib/api/products";
 import { trendingSearches } from "@/lib/data/home";
@@ -51,7 +52,7 @@ export async function SiteHeader() {
             </li>
             <li aria-hidden className="h-3 w-px bg-white/30" />
             <li>
-              <Link href="#" className={utilityLink}>
+              <Link href="/contact" className={utilityLink}>
                 <CircleHelpIcon aria-hidden className="size-3.5" />
                 Help &amp; Support
               </Link>
@@ -78,7 +79,7 @@ export async function SiteHeader() {
           <form
             action="/products"
             role="search"
-            className="flex h-10 items-center rounded-lg border border-surface-container-highest bg-surface-container-lowest transition-[border-color,box-shadow] hover:border-outline-variant focus-within:border-primary-container/60 focus-within:shadow-[0_0_0_3px_rgb(228_0_108/0.1)] md:h-11"
+            className="relative flex h-10 items-center rounded-lg border border-surface-container-highest bg-surface-container-lowest transition-[border-color,box-shadow] hover:border-outline-variant focus-within:border-primary-container/60 focus-within:shadow-[0_0_0_3px_rgb(228_0_108/0.1)] md:h-11"
           >
             <label className="relative hidden h-full shrink-0 items-center sm:flex">
               <span className="sr-only">Category</span>
@@ -99,14 +100,7 @@ export async function SiteHeader() {
             <label htmlFor="site-search" className="sr-only">
               Search products
             </label>
-            <input
-              id="site-search"
-              name="q"
-              type="search"
-              autoComplete="off"
-              placeholder="Search products, brands and stores…"
-              className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-body-md placeholder:text-outline focus:outline-none sm:px-3"
-            />
+            <SearchSuggestInput className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-body-md placeholder:text-outline focus:outline-none sm:px-3" />
             <button
               type="submit"
               aria-label="Search"

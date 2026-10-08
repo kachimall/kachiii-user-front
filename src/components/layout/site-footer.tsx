@@ -1,19 +1,34 @@
 import Link from "next/link";
 import { ShieldCheckIcon, ShieldIcon, TruckIcon } from "lucide-react";
 
-const customerCare = ["Help Center", "How to Buy", "Shipping & Delivery", "Returns & Refunds", "Kachiii Guarantee", "Contact Us"];
-const about = ["About Us", "Kachiii Careers", "Kachiii Policies", "Privacy Policy", "Flash Deals Guide"];
+type FooterLink = { label: string; href: string };
+
+const customerCare: FooterLink[] = [
+  { label: "Help Center", href: "/contact" },
+  { label: "How to Buy", href: "#" },
+  { label: "Shipping & Delivery", href: "#" },
+  { label: "Returns & Refunds", href: "/returns-policy" },
+  { label: "Kachiii Guarantee", href: "#" },
+  { label: "Contact Us", href: "/contact" },
+];
+const about: FooterLink[] = [
+  { label: "About Us", href: "#" },
+  { label: "Kachiii Careers", href: "#" },
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Flash Deals Guide", href: "#" },
+];
 const chip = "flex h-8 items-center justify-center gap-1 rounded-md border border-surface-variant bg-surface-container-lowest px-2 shadow-sm";
 
-function LinkList({ title, items }: { title: string; items: string[] }) {
+function LinkList({ title, items }: { title: string; items: FooterLink[] }) {
   return (
     <nav aria-label={title} className="flex flex-col gap-2.5">
       <h2 className="font-heading text-headline-sm">{title}</h2>
       <ul className="flex flex-col gap-1 text-body-sm text-on-surface-variant">
         {items.map((item) => (
-          <li key={item}>
-            <Link href="#" className="transition-colors hover:text-primary">
-              {item}
+          <li key={item.label}>
+            <Link href={item.href} className="transition-colors hover:text-primary">
+              {item.label}
             </Link>
           </li>
         ))}
@@ -89,11 +104,11 @@ export function SiteFooter() {
             Emirates.
           </p>
           <ul className="flex items-center gap-2.5 text-label-xs text-on-surface-variant">
-            <li><Link href="#" className="hover:text-primary">Privacy Policy</Link></li>
+            <li><Link href="/privacy" className="hover:text-primary">Privacy Policy</Link></li>
             <li aria-hidden className="opacity-40">•</li>
-            <li><Link href="#" className="hover:text-primary">Terms of Service</Link></li>
+            <li><Link href="/terms" className="hover:text-primary">Terms of Service</Link></li>
             <li aria-hidden className="opacity-40">•</li>
-            <li><Link href="#" className="hover:text-primary">Merchant Agreement</Link></li>
+            <li><Link href="/returns-policy" className="hover:text-primary">Returns Policy</Link></li>
           </ul>
         </div>
       </div>

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronRightIcon, LogInIcon, LogOutIcon, PackageIcon } from "lucide-react";
+import { ChevronRightIcon, LogInIcon, LogOutIcon, MessageCircleIcon, PackageIcon, StarIcon } from "lucide-react";
 import { formatDate, orderStatusLabel } from "@/components/account/order-details";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/empty-state";
-import { getPurchases } from "@/lib/api/account";
+import { getConversations, getPurchases } from "@/lib/api/account";
 import { ApiError, type ApiMeta } from "@/lib/api/client";
 import type { ApiPurchase } from "@/lib/api/schema";
 import { formatPrice } from "@/lib/pricing";
@@ -24,6 +24,14 @@ export function AccountOverview() {
   const [orders, setOrders] = useState<ApiPurchase[]>();
   const [meta, setMeta] = useState<ApiMeta>();
   const [error, setError] = useState<string>();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    getConversations(token, { perPage: 1 })
+      .then((res) => setUnread(Number(res.meta.unread_total ?? 0)))
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
@@ -74,6 +82,22 @@ export function AccountOverview() {
             Verify your email to place orders — check your inbox for the link.
           </p>
         )}
+        <nav aria-label="Account" className="-mx-2 flex flex-col">
+          <Link href="/account/messages" className="flex items-center gap-2.5 rounded-md px-2 py-2 text-label-md transition-colors hover:bg-surface-container-low">
+            <MessageCircleIcon aria-hidden className="size-4 text-on-surface-variant" />
+            <span className="flex-1">Messages</span>
+            {unread > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-white">
+                <span className="sr-only">Unread: </span>
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
+          </Link>
+          <Link href="/account/reviews" className="flex items-center gap-2.5 rounded-md px-2 py-2 text-label-md transition-colors hover:bg-surface-container-low">
+            <StarIcon aria-hidden className="size-4 text-on-surface-variant" />
+            <span className="flex-1">My reviews</span>
+          </Link>
+        </nav>
         <Button variant="outline" onClick={signOut} className="mt-2 h-10 rounded-full">
           <LogOutIcon aria-hidden className="size-4" />
           Sign out

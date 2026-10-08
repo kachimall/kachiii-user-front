@@ -4,13 +4,14 @@ import { Suspense } from "react";
 import { SearchXIcon, XIcon } from "lucide-react";
 import { ProductGrid } from "@/components/product/product-card";
 import { SortSelect } from "@/components/product/sort-select";
+import { SponsoredAds } from "@/components/product/sponsored-ads";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getCategories, getCategory, getProducts } from "@/lib/api/products";
+import { getBrand, getCategories, getCategory, getProducts } from "@/lib/api/products";
 import { cn } from "@/lib/utils";
 import type { ProductSort } from "@/types";
 
-const sorts: ProductSort[] = ["newest", "price-asc", "price-desc"];
+const sorts: ProductSort[] = ["newest", "price-asc", "price-desc", "rating", "best-selling"];
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -21,37 +22,45 @@ async function readFilters(searchParams: PageProps<"/products">["searchParams"])
   const category = first(params.category)?.trim() || undefined;
   const sort = first(params.sort) as ProductSort | undefined;
   const q = first(params.q)?.trim() || undefined;
+  const brand = first(params.brand)?.trim() || undefined;
 
   return {
     category,
+    brand,
     sort: sort && sorts.includes(sort) ? sort : "newest",
     q,
   };
 }
 
 export async function generateMetadata({ searchParams }: PageProps<"/products">): Promise<Metadata> {
-  const { category, q } = await readFilters(searchParams);
+  const { category, q, brand } = await readFilters(searchParams);
   if (q) return { title: `Search: ${q}` };
-  if (category) return { title: (await getCategory(category))?.name };
+  if (brand) return { title: (await getBrand(brand))?.name };
+  if (category) {
+    const found = await getCategory(category);
+    return { title: found?.name, description: found?.description };
+  }
   return { title: "Shop all" };
 }
 
 export default async function ProductsPage({ searchParams }: PageProps<"/products">) {
   const filters = await readFilters(searchParams);
-  const [products, categories, activeCategory] = await Promise.all([
+  const [products, categories, activeCategory, activeBrand] = await Promise.all([
     getProducts(filters),
     getCategories(),
     filters.category ? getCategory(filters.category) : undefined,
+    filters.brand ? getBrand(filters.brand) : undefined,
   ]);
 
   const heading = filters.q
     ? `Results for “${filters.q}”`
-    : (activeCategory?.name ?? "Shop all");
+    : [activeBrand?.name, activeCategory?.name].filter(Boolean).join(" · ") || "Shop all";
 
   function hrefFor(category?: string) {
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (filters.q) params.set("q", filters.q);
+    if (filters.brand) params.set("brand", filters.brand);
     if (filters.sort !== "newest") params.set("sort", filters.sort);
     const query = params.toString();
     return query ? `/products?${query}` : "/products";
@@ -105,6 +114,14 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
           <SortSelect value={filters.sort} />
         </Suspense>
       </div>
+
+      {filters.q ? (
+        <SponsoredAds key={`search:${filters.q}`} placement="search" q={filters.q} className="mb-4" />
+      ) : (
+        filters.category && (
+          <SponsoredAds key={`category:${filters.category}`} placement="category" category={filters.category} className="mb-4" />
+        )
+      )}
 
       {products.length > 0 ? (
         <ProductGrid products={products} />

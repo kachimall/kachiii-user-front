@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldValues, type UseFormSetError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Field, showApiError } from "@/components/form/field";
+import { useTurnstile } from "@/components/form/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { forgotPassword, login, register, resetPassword } from "@/lib/api/account";
@@ -29,6 +30,45 @@ function useNextPath() {
 
 const submitClass = "h-11 rounded-full text-base";
 
+const ROBOT_CHECK = "Confirm you are not a robot, then try again.";
+
+/**
+ * A failed sign-in, sign-up or reset: the bot check's error under the widget, a locked or
+ * throttled account (429) or an inactive one (403) as the backend words it above the button,
+ * field errors under their fields, anything else as a toast.
+ */
+function showAuthError<T extends FieldValues>(
+  error: unknown,
+  setError: UseFormSetError<T>,
+  onRobotCheck: (message: string) => void,
+) {
+  if (error instanceof ApiError) {
+    const robot = error.field("turnstile_token");
+    if (robot) {
+      onRobotCheck(robot);
+      const rest = Object.fromEntries(Object.entries(error.errors).filter(([key]) => key !== "turnstile_token"));
+      if (Object.keys(rest).length === 0) return;
+      error = new ApiError(error.message, error.status, rest);
+    }
+    if (error instanceof ApiError && (error.status === 429 || error.status === 403)) {
+      // The per-minute limit answers with Laravel's bare "Too Many Attempts."; the account lockout words its own.
+      const generic = error.status === 429 && /^too many attempts\.?$/i.test(error.message);
+      setError("root.server", { message: generic ? "Too many sign-in attempts. Wait a minute and try again." : error.message });
+      return;
+    }
+  }
+  showApiError(error, setError);
+}
+
+function FormAlert({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+      {message}
+    </p>
+  );
+}
+
 export function LoginForm() {
   const router = useRouter();
   const next = useNextPath();
@@ -38,14 +78,17 @@ export function LoginForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
+  const turnstile = useTurnstile();
 
   async function onSubmit(values: LoginValues) {
+    if (turnstile.enabled && !turnstile.token) return turnstile.setError(ROBOT_CHECK);
     try {
-      await startSession(await login(values.email, values.password));
+      await startSession(await login(values.email, values.password, turnstile.token));
       router.replace(next);
       router.refresh();
     } catch (error) {
-      showApiError(error, setError);
+      turnstile.reset();
+      showAuthError(error, setError, turnstile.setError);
     }
   }
 
@@ -60,6 +103,8 @@ export function LoginForm() {
       <Link href="/forgot-password" className="self-end text-sm text-primary hover:underline">
         Forgot your password?
       </Link>
+      {turnstile.widget}
+      <FormAlert message={errors.root?.server?.message} />
       <Button type="submit" disabled={isSubmitting} className={submitClass}>
         {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
@@ -82,15 +127,20 @@ export function RegisterForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) });
+  const turnstile = useTurnstile();
 
   async function onSubmit(values: RegisterValues) {
+    if (turnstile.enabled && !turnstile.token) return turnstile.setError(ROBOT_CHECK);
     try {
-      await startSession(await register({ ...values, phone: values.phone || undefined }));
+      await startSession(
+        await register({ ...values, phone: values.phone || undefined, turnstile_token: turnstile.token }),
+      );
       toast.success("Welcome to Kachiii!", { description: "We’ve emailed you a link to verify your address." });
       router.replace(next);
       router.refresh();
     } catch (error) {
-      showApiError(error, setError);
+      turnstile.reset();
+      showAuthError(error, setError, turnstile.setError);
     }
   }
 
@@ -111,6 +161,8 @@ export function RegisterForm() {
       <Field label="Confirm password" error={errors.password_confirmation?.message}>
         <Input type="password" autoComplete="new-password" {...field("password_confirmation")} />
       </Field>
+      {turnstile.widget}
+      <FormAlert message={errors.root?.server?.message} />
       <Button type="submit" disabled={isSubmitting} className={submitClass}>
         {isSubmitting ? "Creating account…" : "Create account"}
       </Button>
@@ -132,13 +184,16 @@ export function ForgotPasswordForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<{ email: string }>({ resolver: zodResolver(loginSchema.pick({ email: true })) });
+  const turnstile = useTurnstile();
 
   async function onSubmit({ email }: { email: string }) {
+    if (turnstile.enabled && !turnstile.token) return turnstile.setError(ROBOT_CHECK);
     try {
-      await forgotPassword(email);
+      await forgotPassword(email, turnstile.token);
       setSent(true);
     } catch (error) {
-      showApiError(error, setError);
+      turnstile.reset();
+      showAuthError(error, setError, turnstile.setError);
     }
   }
 
@@ -151,6 +206,8 @@ export function ForgotPasswordForm() {
       <Field label="Email" error={errors.email?.message}>
         <Input type="email" autoComplete="email" {...field("email")} />
       </Field>
+      {turnstile.widget}
+      <FormAlert message={errors.root?.server?.message} />
       <Button type="submit" disabled={isSubmitting} className={submitClass}>
         {isSubmitting ? "Sending…" : "Send reset link"}
       </Button>

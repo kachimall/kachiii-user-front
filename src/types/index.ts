@@ -6,6 +6,8 @@ export type Category = {
   slug: string;
   name: string;
   image: string;
+  /** For search engines; on a single category only. */
+  description?: string;
   /** Number of listed products, when known. */
   itemCount?: number;
 };
@@ -41,9 +43,12 @@ export type Product = {
   /** Empty on list cards; the detail endpoint fills it. */
   variants: ProductVariant[];
   inStock: boolean;
-  store?: { name: string; slug: string };
+  store?: { id: string; name: string; slug: string };
   storeTier?: StoreTier;
+  /** Average stars, once the product has a review. */
   rating?: number;
+  /** Number of reviews behind `rating`. */
+  ratingCount?: number;
   soldCount?: number;
   /** Short promo chips, e.g. "Free Shipping". `tone` picks the chip color. */
   perks: ProductPerk[];
@@ -52,10 +57,30 @@ export type Product = {
   flashSale?: { soldPercent: number };
 };
 
-export type ProductSort = "newest" | "price-asc" | "price-desc";
+export type ProductSort = "newest" | "price-asc" | "price-desc" | "rating" | "best-selling";
+
+export type Store = {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  logo?: string;
+  banner?: string;
+  rating?: number;
+  ratingCount: number;
+  productCount?: number;
+  joinedAt?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  policies?: string;
+};
 
 export type ProductQuery = {
   category?: string;
+  /** A store's slug: only its products. */
+  store?: string;
+  /** A brand's slug. */
+  brand?: string;
   q?: string;
   sort?: ProductSort;
   minPrice?: number;

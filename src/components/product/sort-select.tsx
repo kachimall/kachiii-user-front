@@ -6,6 +6,8 @@ import type { ProductSort } from "@/types";
 
 const options: { value: ProductSort; label: string }[] = [
   { value: "newest", label: "Newest" },
+  { value: "best-selling", label: "Best selling" },
+  { value: "rating", label: "Top rated" },
   { value: "price-asc", label: "Price: low to high" },
   { value: "price-desc", label: "Price: high to low" },
 ];

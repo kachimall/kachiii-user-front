@@ -13,6 +13,8 @@ export type ApiCategory = {
   depth: number;
   position: number;
   breadcrumbs?: ApiRef[];
+  /** On a single category from the catalogue: its page's search-engine details. */
+  seo?: ApiSeo;
   children: ApiCategory[];
 };
 
@@ -45,8 +47,23 @@ export type ApiProductCard = {
   currency_code: string;
   price_range: { min: Money; max: Money } | null;
   in_stock: boolean;
+  /** Its visible reviews; average is null until the first one. Absent where the query didn't select it. */
+  rating?: ApiRating;
+  /** Units sold, recounted every few minutes. */
+  sold_count?: number;
   thumbnail_url: string | null;
   store: ApiRef;
+};
+
+/** Average stars (a decimal string, e.g. "4.50") and the number of reviews behind it. */
+export type ApiRating = { average: string | null; count: number };
+
+/** A page's own title, description, canonical address and preview image, for search engines. */
+export type ApiSeo = {
+  title: string;
+  description: string;
+  canonical_url: string;
+  image_url: string | null;
 };
 
 export type ApiProduct = ApiProductCard & {
@@ -57,6 +74,100 @@ export type ApiProduct = ApiProductCard & {
   options: { id: string; name: string; position: number; values: { id: string; value: string }[] }[];
   variants: ApiVariant[];
   images: ApiImage[];
+  seo?: ApiSeo & { price: Money | null; currency: string };
+};
+
+/** A store's public page (GET /stores/{slug}). */
+export type ApiStore = ApiRef & {
+  description: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  /** Free text: returns, shipping and so on. */
+  policies: string | null;
+  joined_at: string | null;
+  rating?: ApiRating;
+  products_count?: number;
+  seo?: ApiSeo;
+};
+
+/** A product review as visitors see it. The buyer's own list adds the product and moderation. */
+export type ApiReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  photo_urls: string[];
+  /** "Sarah L." */
+  author: string;
+  /** What they bought, e.g. "Red / M". */
+  variant: string | null;
+  /** The store's one reply. */
+  reply: { text: string; replied_at: string } | null;
+  created_at: string;
+  product?: { id: string; name: string };
+  hidden?: boolean;
+  hidden_reason?: string | null;
+};
+
+/** `meta.rating` of a product's reviews: average, count and how many gave each star. */
+export type ApiReviewSummary = ApiRating & { stars: Record<"1" | "2" | "3" | "4" | "5", number> };
+
+/** Names matching what the shopper is typing (GET /search/suggestions). */
+export type ApiSuggestions = {
+  products: ApiRef[];
+  categories: ApiRef[];
+  brands: ApiRef[];
+  stores: ApiRef[];
+};
+
+/** A vendor ad: a product card, or a store card for an ad for a whole store. */
+export type ApiSponsoredAd =
+  | { id: string; type: "product"; product: ApiProductCard; store: null }
+  | {
+      id: string;
+      type: "store";
+      product: null;
+      store: ApiRef & { logo_url: string | null; banner_url: string | null; rating: ApiRating };
+    };
+
+export type ApiAdPlacement = "home" | "category" | "search";
+
+/** A static page (terms, privacy, returns-policy, contact); body is Markdown. */
+export type ApiPage = { key: string; title: string; body: string; updated_at: string | null };
+
+/** What checkout would offer to deliver one unit to an emirate. */
+export type ApiDeliveryEstimate = {
+  variant_id: string;
+  emirate: Emirate;
+  /** Days the store has to pack it; null when KACHIII's warehouse sends it at once. */
+  ships_within_days: number | null;
+  /** Cheapest first; empty where the courier does not deliver yet. */
+  options: ApiShippingOption[];
+  /** What a package's items must cost for its cheapest delivery to be free; null without such an offer. */
+  free_delivery_min_total: Money | null;
+};
+
+export type ApiMessage = {
+  id: string;
+  sender: "buyer" | "store";
+  /** "welcome" or "away" for a reply the store's settings sent by themselves. */
+  auto_reply: string | null;
+  body: string | null;
+  /** API paths (no origin); load them with the shopper's token. */
+  photos: string[];
+  /** Hidden by KACHIII: only the reason shows. */
+  hidden: boolean;
+  hidden_reason: string | null;
+  sent_at: string;
+};
+
+export type ApiConversation = {
+  id: string;
+  store: ApiRef & { logo_url: string | null };
+  last_message: ApiMessage | null;
+  unread_count?: number;
+  last_message_at: string | null;
 };
 
 /** A live home banner (GET /banners): only what visitors see. */

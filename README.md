@@ -60,6 +60,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
   `POST /checkout/preview`.
 - With the backend's mock gateway (`NOQODI_DRIVER=mock`), online payments land on
   `/checkout/payment`, where you choose to pay or decline.
+- `/robots.txt` and the sitemaps (`/sitemap.xml`, `/sitemap-pages.xml`,
+  `/sitemap-products-N.xml`) are rewritten to the backend, which writes them.
+- Sign-up, login and password reset show Cloudflare Turnstile when
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set; leave it empty when the backend has no
+  `TURNSTILE_SECRET_KEY`.
+- Vendor ads (`GET /sponsored`) load in the browser, so each view counts against the
+  visitor's own address rather than the Next server's.
 - Demo shopper: `demo.buyer@kachi.test` / `password`. Vouchers: `WELCOME10` and
   `DEMOSTORE20`. Emails (verification, password reset) arrive in Mailpit at
   http://localhost:8025.

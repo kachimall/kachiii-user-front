@@ -9,6 +9,7 @@ import { HeroCarousel } from "@/components/home/hero-carousel";
 import { PromoTiles } from "@/components/home/promo-tiles";
 import { QuickActions } from "@/components/home/quick-actions";
 import { SideBanners } from "@/components/home/side-banners";
+import { SponsoredAds } from "@/components/product/sponsored-ads";
 import { IdleShowcase, ShowcaseSlot } from "@/components/showcase/idle-showcase";
 import { ShowcaseProvider } from "@/components/showcase/showcase-context";
 import { getHomeBanners } from "@/lib/api/banners";
@@ -80,6 +81,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
           <QuickActions />
           <FlashSale products={flashSale} />
           <CategoryRail categories={categories} />
+          <SponsoredAds placement="home" title="Sponsored picks" />
           <DiscoverFeed products={recommended} />
         </div>
         {placement === "2" && <IdleShowcase />}

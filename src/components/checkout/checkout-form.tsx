@@ -232,7 +232,7 @@ export function CheckoutForm() {
                       <span className="flex-1 text-sm">
                         {o.name}{" "}
                         <span className="text-muted-foreground">
-                          ({o.min_days === o.max_days ? o.min_days : `${o.min_days}–${o.max_days}`} days)
+                          ({o.min_days === o.max_days ? o.min_days : `${o.min_days}–${o.max_days}`} {o.max_days === 1 ? "day" : "days"})
                         </span>
                       </span>
                       <span className="text-sm tabular-nums">{Number(o.fee) === 0 ? "Free" : formatPrice(o.fee)}</span>

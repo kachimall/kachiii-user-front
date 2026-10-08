@@ -2,24 +2,45 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRightIcon, RotateCcwIcon, ShieldCheckIcon, StarIcon, StoreIcon, TruckIcon } from "lucide-react";
+import { MessageStoreButton } from "@/components/messages/message-store-button";
 import { AddToCart } from "@/components/product/add-to-cart";
+import { DeliveryEstimate } from "@/components/product/delivery-estimate";
 import { perkTone, ProductGrid, StoreBadge } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
-import { getProduct, getRelatedProducts } from "@/lib/api/products";
+import { ProductReviews } from "@/components/product/product-reviews";
+import { formatRating } from "@/components/product/rating-stars";
+import { getProductReviews } from "@/lib/api/catalog";
+import { getProduct, getProductWithSeo, getRelatedProducts } from "@/lib/api/products";
 import { discountLabel, formatCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 const promises = [
   { icon: ShieldCheckIcon, title: "100% authentic", text: "Sold by verified stores" },
-  { icon: TruckIcon, title: "UAE-wide delivery", text: "Fee and date shown at checkout" },
+  { icon: TruckIcon, title: "UAE-wide delivery", text: "To all seven emirates" },
   { icon: RotateCcwIcon, title: "Easy returns", text: "Request from your order page" },
 ];
 
+// The path segment is the product's id, or "{slug}-{id}" as the backend's sitemap and
+// canonical address give it.
 export async function generateMetadata({ params }: PageProps<"/products/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const product = await getProduct(id);
-  if (!product) return {};
-  return { title: product.name, description: product.description };
+  const found = await getProductWithSeo(id);
+  if (!found) return {};
+  const { product, seo } = found;
+  const description = seo?.description ?? product.description?.slice(0, 160);
+  const image = seo?.image_url ?? product.images[0];
+  return {
+    title: product.name,
+    description,
+    alternates: seo ? { canonical: seo.canonical_url } : undefined,
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url: seo?.canonical_url,
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
+  };
 }
 
 export default async function ProductPage({ params }: PageProps<"/products/[id]">) {
@@ -27,7 +48,13 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
   const product = await getProduct(id);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product);
+  const [related, reviews] = await Promise.all([
+    getRelatedProducts(product),
+    // Reviews are extra: the page still renders when they can't load.
+    getProductReviews(product.id, { perPage: 5 }, { revalidate: 60 }).catch(() => undefined),
+  ]);
+  const rating = reviews?.summary?.average != null ? Number(reviews.summary.average) : product.rating;
+  const ratingCount = reviews?.summary?.count ?? product.ratingCount ?? 0;
   const crumbs = product.breadcrumbs ?? [];
   const discount = discountLabel(product.price, product.compareAtPrice);
 
@@ -82,19 +109,22 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
                 </div>
               )}
               <h1 className="font-heading text-headline-md md:text-headline-lg">{product.name}</h1>
-              {(product.rating !== undefined || product.soldCount !== undefined) && (
+              {(rating !== undefined || !!product.soldCount) && (
                 <p className="flex items-center gap-2 text-body-sm text-on-surface-variant">
-                  {product.rating !== undefined && (
-                    <span className="flex items-center gap-1">
+                  {rating !== undefined && (
+                    <a href="#reviews-heading" className="flex items-center gap-1 hover:text-primary">
                       <StarIcon aria-hidden className="size-4 fill-star text-star" />
                       <span className="font-semibold text-on-surface">
                         <span className="sr-only">Rated </span>
-                        {product.rating}
+                        {formatRating(rating)}
                       </span>
-                    </span>
+                      <span>
+                        ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
+                      </span>
+                    </a>
                   )}
-                  {product.rating !== undefined && product.soldCount !== undefined && <span aria-hidden>•</span>}
-                  {product.soldCount !== undefined && <span>{formatCount(product.soldCount)} sold</span>}
+                  {rating !== undefined && !!product.soldCount && <span aria-hidden>•</span>}
+                  {!!product.soldCount && <span>{formatCount(product.soldCount)} sold</span>}
                 </p>
               )}
             </div>
@@ -103,23 +133,25 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
           </div>
 
           {product.store && (
-            <Link
-              href={`/products?q=${encodeURIComponent(product.store.name)}`}
-              className="flex items-center gap-3 rounded-lg bg-surface-container-lowest p-3 shadow-card transition-shadow hover:shadow-card-hover md:p-4"
-            >
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-fixed text-secondary">
-                <StoreIcon aria-hidden className="size-5" />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="flex items-center gap-1.5">
-                  <span className="truncate font-heading text-headline-sm">{product.store.name}</span>
-                  <StoreBadge store={product.storeTier} />
+            <div className="flex flex-wrap items-center gap-3 rounded-lg bg-surface-container-lowest p-3 shadow-card md:p-4">
+              <Link href={`/stores/${product.store.slug}`} className="group/store flex min-w-0 flex-1 items-center gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary-fixed text-secondary">
+                  <StoreIcon aria-hidden className="size-5" />
                 </span>
-                <span className="text-body-sm text-on-surface-variant">Search more from this store</span>
-              </span>
-              <ChevronRightIcon aria-hidden className="size-5 text-outline" />
-            </Link>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex items-center gap-1.5">
+                    <span className="truncate font-heading text-headline-sm group-hover/store:text-primary">{product.store.name}</span>
+                    <StoreBadge store={product.storeTier} />
+                  </span>
+                  <span className="text-body-sm text-on-surface-variant">Visit the store</span>
+                </span>
+                <ChevronRightIcon aria-hidden className="size-5 text-outline" />
+              </Link>
+              <MessageStoreButton store={product.store} about={product.name} />
+            </div>
           )}
+
+          <DeliveryEstimate productId={product.id} />
 
           <ul className="grid grid-cols-3 gap-2 rounded-lg bg-surface-container-lowest p-3 shadow-card md:p-4">
             {promises.map(({ icon: Icon, title, text }) => (
@@ -143,6 +175,12 @@ export default async function ProductPage({ params }: PageProps<"/products/[id]"
           )}
         </div>
       </div>
+
+      {reviews && (
+        <div className="mt-3 md:mt-6">
+          <ProductReviews productId={product.id} initial={reviews} />
+        </div>
+      )}
 
       {related.length > 0 && (
         <section aria-labelledby="related-heading" className="mt-8 md:mt-12">

@@ -29,7 +29,8 @@ export function StoreBadge({ store, className }: { store: Product["storeTier"]; 
   );
 }
 
-export function ProductCard({ product }: { product: Product }) {
+/** `sponsored` marks a vendor ad's card, on its image so it never covers the price. */
+export function ProductCard({ product, sponsored = false }: { product: Product; sponsored?: boolean }) {
   const discount = discountLabel(product.price, product.compareAtPrice);
   const soldOut = !product.inStock;
 
@@ -46,6 +47,11 @@ export function ProductCard({ product }: { product: Product }) {
         {discount && (
           <span className="absolute top-2 right-2 rounded-sm bg-primary px-1 py-0.5 text-label-xs text-white">
             {discount}
+          </span>
+        )}
+        {sponsored && !soldOut && (
+          <span className="absolute bottom-2 left-2 rounded-sm bg-on-surface/70 px-1 text-[9px] leading-4 font-semibold text-white uppercase">
+            Sponsored
           </span>
         )}
         {soldOut && (
@@ -75,15 +81,19 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="pt-1">
-          {product.rating !== undefined && product.soldCount !== undefined ? (
+          {product.rating !== undefined || !!product.soldCount ? (
             <p className="flex items-center gap-1 text-label-xs text-on-surface-variant">
-              <StarIcon aria-hidden className="size-3.5 fill-star text-star" />
-              <span className="text-on-surface">
-                <span className="sr-only">Rated </span>
-                {product.rating}
-              </span>
-              <span aria-hidden>•</span>
-              <span>{formatCount(product.soldCount)} sold</span>
+              {product.rating !== undefined && (
+                <>
+                  <StarIcon aria-hidden className="size-3.5 fill-star text-star" />
+                  <span className="text-on-surface">
+                    <span className="sr-only">Rated </span>
+                    {product.rating.toFixed(1)}
+                  </span>
+                </>
+              )}
+              {product.rating !== undefined && !!product.soldCount && <span aria-hidden>•</span>}
+              {!!product.soldCount && <span>{formatCount(product.soldCount)} sold</span>}
             </p>
           ) : (
             product.store && <p className="truncate text-label-xs text-on-surface-variant">{product.store.name}</p>
