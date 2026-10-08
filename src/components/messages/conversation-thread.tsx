@@ -49,7 +49,22 @@ export function ConversationThread(props: { id?: string; store?: StoreRef; about
   );
 }
 
-function Thread({ token, id, store: newStore, about }: { token: string; id?: string; store?: StoreRef; about?: string }) {
+/** Inside the floating chat panel: back and a started conversation stay in the panel. */
+type Embedded = { onBack: () => void; onStarted: (id: string) => void };
+
+export function Thread({
+  token,
+  id,
+  store: newStore,
+  about,
+  embedded,
+}: {
+  token: string;
+  id?: string;
+  store?: StoreRef;
+  about?: string;
+  embedded?: Embedded;
+}) {
   const router = useRouter();
   const user = useAuth((s) => s.user);
   const [conversation, setConversation] = useState<ApiConversation>();
@@ -141,14 +156,20 @@ function Thread({ token, id, store: newStore, about }: { token: string; id?: str
 
   const store: StoreRef | undefined = conversation?.store ?? newStore;
 
-  if (loading) return <Skeleton className="h-[60vh] rounded-lg" />;
+  if (loading) return <Skeleton className={embedded ? "m-3 h-[calc(100%-1.5rem)] rounded-lg" : "h-[60vh] rounded-lg"} />;
   if (error) {
     return (
-      <div className="flex flex-col items-start gap-3">
+      <div className={cn("flex flex-col items-start gap-3", embedded && "p-4")}>
         <p className="text-destructive">{error}</p>
-        <Link href="/account/messages" className="text-sm text-primary hover:underline">
-          Back to messages
-        </Link>
+        {embedded ? (
+          <button type="button" onClick={embedded.onBack} className="text-sm text-primary hover:underline">
+            Back to messages
+          </button>
+        ) : (
+          <Link href="/account/messages" className="text-sm text-primary hover:underline">
+            Back to messages
+          </Link>
+        )}
       </div>
     );
   }
@@ -172,15 +193,27 @@ function Thread({ token, id, store: newStore, about }: { token: string; id?: str
     }
     if (!newStore?.id) throw new ApiError("Choose a store to message from its product or store page.", 422);
     const started = await startConversation(token, newStore.id, input);
-    router.replace(`/account/messages/${started.id}`);
+    if (embedded) embedded.onStarted(started.id);
+    else router.replace(`/account/messages/${started.id}`);
   }
 
   return (
-    <div className="flex h-[calc(100dvh-12rem)] min-h-112 flex-col overflow-hidden rounded-lg bg-surface-container-lowest shadow-card md:h-[calc(100dvh-16rem)]">
-      <header className="flex items-center gap-3 border-b border-surface-container p-3 md:p-4">
-        <Link href="/account/messages" aria-label="All messages" className="grid size-9 place-items-center rounded-full hover:bg-surface-container-low">
-          <ArrowLeftIcon aria-hidden className="size-5" />
-        </Link>
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden bg-surface-container-lowest",
+        embedded ? "h-full" : "h-[calc(100dvh-12rem)] min-h-112 rounded-lg shadow-card md:h-[calc(100dvh-16rem)]",
+      )}
+    >
+      <header className={cn("flex items-center gap-3 border-b border-surface-container p-3", !embedded && "md:p-4")}>
+        {embedded ? (
+          <button type="button" onClick={embedded.onBack} aria-label="All messages" className="grid size-9 place-items-center rounded-full hover:bg-surface-container-low">
+            <ArrowLeftIcon aria-hidden className="size-5" />
+          </button>
+        ) : (
+          <Link href="/account/messages" aria-label="All messages" className="grid size-9 place-items-center rounded-full hover:bg-surface-container-low">
+            <ArrowLeftIcon aria-hidden className="size-5" />
+          </Link>
+        )}
         <StoreAvatar name={store.name} logo={store.logo_url ?? null} className="size-10" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-heading text-headline-sm">{store.name}</p>

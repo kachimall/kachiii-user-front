@@ -44,6 +44,37 @@ export function StoreAvatar({ name, logo, className }: { name: string; logo: str
   );
 }
 
+/** A conversation's store, last message, time and unread count, for a list row. */
+export function ConversationRow({ conversation: c }: { conversation: ApiConversation }) {
+  const unread = c.unread_count ?? 0;
+  const last = c.last_message;
+  return (
+    <>
+      <StoreAvatar name={c.store.name} logo={c.store.logo_url} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className={cn("truncate font-heading text-headline-sm", unread > 0 && "text-on-surface")}>{c.store.name}</p>
+          <time dateTime={c.last_message_at ?? undefined} className="shrink-0 text-label-xs font-normal text-on-surface-variant">
+            {formatWhen(c.last_message_at)}
+          </time>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className={cn("flex min-w-0 items-center gap-1 truncate text-body-sm", unread > 0 ? "font-semibold text-on-surface" : "text-on-surface-variant")}>
+            {last && !last.body && last.photos.length > 0 && !last.hidden && <ImageIcon aria-hidden className="size-3.5 shrink-0" />}
+            <span className="truncate">{messagePreview(last)}</span>
+          </p>
+          {unread > 0 && (
+            <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-white">
+              <span className="sr-only">Unread: </span>
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function ConversationList() {
   return (
     <AccountGate next="/account/messages" title="Sign in to see your messages" description="Chat with stores about products and orders.">
@@ -86,38 +117,14 @@ function Conversations({ token }: { token: string }) {
   return (
     <div className="flex flex-col gap-4">
       <ul className="flex flex-col divide-y divide-surface-container overflow-hidden rounded-lg bg-surface-container-lowest shadow-card">
-        {conversations.map((c) => {
-          const unread = c.unread_count ?? 0;
-          const last = c.last_message;
-          return (
-            <li key={c.id}>
-              <Link href={`/account/messages/${c.id}`} className="flex items-center gap-3 p-4 transition-colors hover:bg-surface-container-low">
-                <StoreAvatar name={c.store.name} logo={c.store.logo_url} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className={cn("truncate font-heading text-headline-sm", unread > 0 && "text-on-surface")}>{c.store.name}</p>
-                    <time dateTime={c.last_message_at ?? undefined} className="shrink-0 text-label-xs font-normal text-on-surface-variant">
-                      {formatWhen(c.last_message_at)}
-                    </time>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className={cn("flex min-w-0 items-center gap-1 truncate text-body-sm", unread > 0 ? "font-semibold text-on-surface" : "text-on-surface-variant")}>
-                      {last && !last.body && last.photos.length > 0 && !last.hidden && <ImageIcon aria-hidden className="size-3.5 shrink-0" />}
-                      <span className="truncate">{messagePreview(last)}</span>
-                    </p>
-                    {unread > 0 && (
-                      <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-white">
-                        <span className="sr-only">Unread: </span>
-                        {unread > 99 ? "99+" : unread}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <ChevronRightIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-              </Link>
-            </li>
-          );
-        })}
+        {conversations.map((c) => (
+          <li key={c.id}>
+            <Link href={`/account/messages/${c.id}`} className="flex items-center gap-3 p-4 transition-colors hover:bg-surface-container-low">
+              <ConversationRow conversation={c} />
+              <ChevronRightIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
+        ))}
       </ul>
       {meta && (meta.last_page ?? 1) > 1 && (
         <div className="flex items-center justify-between text-sm">

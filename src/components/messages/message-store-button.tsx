@@ -9,6 +9,7 @@ import { getConversations } from "@/lib/api/account";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { currentToken } from "@/store/auth";
+import { useChat } from "@/store/chat";
 
 type Props = {
   store: { id: string; slug: string; name: string };
@@ -17,10 +18,14 @@ type Props = {
   className?: string;
 };
 
-/** Opens the shopper's conversation with a store, or a new one; sign-in first when signed out. */
+/**
+ * Opens the shopper's conversation with a store, or a new one, in the floating chat panel;
+ * sign-in first when signed out.
+ */
 export function MessageStoreButton({ store, about, className }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const show = useChat((s) => s.show);
   const [busy, setBusy] = useState(false);
 
   async function open() {
@@ -32,13 +37,11 @@ export function MessageStoreButton({ store, about, className }: Props) {
     setBusy(true);
     try {
       const existing = (await getConversations(token, { store: store.slug, perPage: 1 })).data[0];
-      if (existing) {
-        router.push(`/account/messages/${existing.id}`);
-        return;
-      }
-      const params = new URLSearchParams({ store: store.id, slug: store.slug, name: store.name });
-      if (about) params.set("about", about);
-      router.push(`/account/messages/new?${params}`);
+      show(
+        existing
+          ? { kind: "thread", id: existing.id }
+          : { kind: "new", store: { id: store.id, slug: store.slug, name: store.name }, about },
+      );
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : "Couldn’t open the chat. Try again.");
     } finally {

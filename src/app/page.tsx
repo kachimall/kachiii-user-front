@@ -4,7 +4,6 @@ import { CategoryRail } from "@/components/home/category-rail";
 import { ClaimVoucherButton } from "@/components/home/claim-voucher-button";
 import { DiscoverFeed } from "@/components/home/discover-feed";
 import { FlashSale } from "@/components/home/flash-sale";
-import { FloatingActions } from "@/components/home/floating-actions";
 import { HeroCarousel } from "@/components/home/hero-carousel";
 import { PromoTiles } from "@/components/home/promo-tiles";
 import { QuickActions } from "@/components/home/quick-actions";
@@ -86,8 +85,6 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         </div>
         {placement === "2" && <IdleShowcase />}
       </ShowcaseProvider>
-
-      <FloatingActions />
     </>
   );
 }

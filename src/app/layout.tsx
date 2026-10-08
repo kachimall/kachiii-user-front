@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { SessionHydrator } from "@/components/layout/cart-button";
+import { FloatingActions } from "@/components/layout/floating-actions";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        <FloatingActions />
         <MobileBottomNav categories={categories} />
         <SessionHydrator />
         <Toaster position="top-center" />
