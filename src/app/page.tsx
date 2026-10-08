@@ -14,7 +14,7 @@ import { ShowcaseProvider } from "@/components/showcase/showcase-context";
 import { getHomeBanners } from "@/lib/api/banners";
 import { getCategories, getFlashSaleProducts, getRecommendedProducts } from "@/lib/api/products";
 import { heroSlides, voucherCode } from "@/lib/data/home";
-import { showcaseFaces } from "@/lib/data/showcase";
+import { bannerFace, showcaseFaces } from "@/lib/data/showcase";
 
 /**
  * Where the special-category showcase goes. `?showcase=1|2|3` previews the
@@ -24,9 +24,10 @@ import { showcaseFaces } from "@/lib/data/showcase";
  *   2 — only on idle, zooming out of the hero banner image
  *   3 — replaces the whole flat flash-deal hero banner
  *
- * By default the cube is the hero banner and never pops up. With
- * `?showcase=2` the slider shows the admin's home banners (GET /banners) when
- * there are any, else the built-in promos. The cards beside the hero show the
+ * By default the cube is the hero banner and never pops up; its faces are the
+ * admin's home carousel banners (GET /banners) when there are any, else the
+ * built-in ones. With `?showcase=2` the slider shows the admin's banners too,
+ * else the built-in promos. The cards beside the hero show the
  * admin's side banners when there are any.
  */
 type Placement = "default" | "1" | "2" | "3";
@@ -42,6 +43,8 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
     getHomeBanners(),
   ]);
   const carousel = placement === "2" ? banners.home_carousel : [];
+  // The cube turns through the admin's home carousel banners, or the built-in faces without any.
+  const faces = banners.home_carousel.length > 0 ? banners.home_carousel.map(bannerFace) : showcaseFaces;
 
   return (
     <>
@@ -62,7 +65,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         </ClaimVoucherButton>
       </div>
 
-      <ShowcaseProvider faces={showcaseFaces}>
+      <ShowcaseProvider faces={faces}>
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-3 py-2.5 md:px-6">
           <section aria-label="Featured promotions" className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {placement === "default" || placement === "3" ? (

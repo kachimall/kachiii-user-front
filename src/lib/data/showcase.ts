@@ -1,13 +1,44 @@
-// Faces of the rotating special-category showcase on the home page, in the
-// order of the client's reference deck. Images are temporary placeholders.
+import type { ApiBanner } from "@/lib/api/schema";
+
+// Faces of the rotating special-category showcase on the home page. The admin's home
+// carousel banners fill it when there are any; the built-in faces below (in the order of
+// the client's reference deck, with placeholder images) stand in when there are none.
 
 export type ShowcaseFace = {
   id: string;
+  /** The big word on the face (a banner's headline). The pictures carry no text of their own. */
   word: string;
   tagline: string;
+  /** A banner's button label, shown as a button when the face links somewhere. */
+  button?: string | null;
   image: string;
-  href: string;
+  /** A banner's phone artwork, shown on narrow screens instead of `image`. */
+  mobileImage?: string | null;
+  /** What the picture shows, when the face has no word to name it. */
+  alt?: string;
+  /** Null: the face links nowhere. */
+  href: string | null;
+  /** When set, the face counts down to this time (a banner's end). */
+  endsAt?: string | null;
 };
+
+/** The face's name, for screen readers and the dots. */
+export const faceLabel = (face: ShowcaseFace) => face.word || face.alt || "Promotion";
+
+/** A home carousel banner as a cube face: its headline, subheadline and button, written over its picture. */
+export function bannerFace(banner: ApiBanner): ShowcaseFace {
+  return {
+    id: banner.id,
+    word: banner.headline ?? "",
+    tagline: banner.subheadline ?? "",
+    button: banner.link_url ? banner.button_label : null,
+    image: banner.desktop_image_url,
+    mobileImage: banner.mobile_image_url,
+    alt: banner.alt_text,
+    href: banner.link_url,
+    endsAt: banner.countdown_ends_at,
+  };
+}
 
 export const showcaseFaces: ShowcaseFace[] = [
   { id: "style", word: "Style", tagline: "Fashion picks for the week", image: "/showcase/style.jpg", href: "/products?category=fashion" },

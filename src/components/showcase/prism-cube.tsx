@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, TimerIcon } from "lucide-react";
+import { EndsAtCountdown } from "@/components/home/countdown";
 import { useShowcase } from "@/components/showcase/showcase-context";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
-import { SHOWCASE_DWELL_MS, SHOWCASE_TURN_MS } from "@/lib/data/showcase";
+import { isApiImage } from "@/lib/api/client";
+import { faceLabel, SHOWCASE_DWELL_MS, SHOWCASE_TURN_MS, type ShowcaseFace } from "@/lib/data/showcase";
 import { cn } from "@/lib/utils";
 
 const DRAG_THRESHOLD_PX = 6;
@@ -148,46 +150,60 @@ export function PrismCube({ autoplay, variant, sizes, className }: Props) {
                 key={slot}
                 role="group"
                 aria-roledescription="slide"
-                aria-label={`${index + 1} of ${n}: ${face.word}`}
+                aria-label={`${index + 1} of ${n}: ${faceLabel(face)}`}
                 aria-hidden={!isFront}
                 className="absolute inset-0 overflow-hidden shadow-lg backface-hidden"
                 style={{ transform: `rotateY(${slot * 90}deg) translateZ(50cqw)` }}
               >
-                <Link
-                  href={face.href}
-                  tabIndex={isFront ? 0 : -1}
-                  draggable={false}
-                  className="absolute inset-0 block overflow-hidden outline-none focus-visible:ring-3 focus-visible:ring-white focus-visible:ring-inset"
-                >
-                  <Image
-                    src={face.image}
-                    alt=""
-                    fill
-                    draggable={false}
-                    quality={90}
-                    sizes={sizes ?? (isOverlay ? "(min-width: 768px) 900px, 92vw" : "92vw")}
-                    className="object-cover"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent"
-                  />
-                  <span className="absolute inset-0 flex flex-col justify-end p-[5cqw] pb-[9cqw] text-white">
+                <FaceLink face={face} focusable={isFront}>
+                  <FacePicture face={face} sizes={sizes ?? (isOverlay ? "(min-width: 768px) 900px, 92vw" : "92vw")} />
+                  {(face.word || face.tagline || face.button) && (
+                    <>
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent"
+                      />
+                      <span className="absolute inset-0 flex flex-col justify-end p-[5cqw] pb-[9cqw] text-white">
+                        {face.word && (
+                          <span
+                            className="font-heading leading-[0.9] font-extrabold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
+                            style={{ fontSize: face.word.length > 8 ? "9cqw" : "17cqw" }}
+                          >
+                            {face.word}
+                          </span>
+                        )}
+                        {face.tagline && (
+                          <span
+                            className="mt-[1.5cqw] flex items-center gap-1 font-semibold drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]"
+                            style={{ fontSize: "max(11px, 3.4cqw)" }}
+                          >
+                            {face.tagline}
+                            {face.href && !face.button && <ArrowRightIcon aria-hidden className="size-[1.2em]" />}
+                          </span>
+                        )}
+                        {face.button && (
+                          <span
+                            className="mt-[2.5cqw] flex w-fit items-center gap-1 rounded-lg bg-primary px-[3cqw] py-[1.2cqw] font-heading font-bold shadow-md"
+                            style={{ fontSize: "max(12px, 2.6cqw)" }}
+                          >
+                            {face.button}
+                            <ArrowRightIcon aria-hidden className="size-[1.1em]" />
+                          </span>
+                        )}
+                      </span>
+                    </>
+                  )}
+                  {face.endsAt && (
                     <span
-                      className="font-heading leading-[0.9] font-extrabold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
-                      style={{ fontSize: "17cqw" }}
+                      className="absolute top-[3cqw] right-[3cqw] flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-white backdrop-blur-md"
+                      style={{ fontSize: "max(11px, 2.4cqw)" }}
                     >
-                      {face.word}
+                      <TimerIcon aria-hidden className="size-[1.2em] text-tertiary-fixed" />
+                      <span>Ends in:</span>
+                      <EndsAtCountdown endsAt={face.endsAt} className="font-heading font-bold tracking-wider tabular-nums" />
                     </span>
-                    <span
-                      className="mt-[1.5cqw] flex items-center gap-1 font-semibold"
-                      style={{ fontSize: "max(11px, 3.4cqw)" }}
-                    >
-                      {face.tagline}
-                      <ArrowRightIcon aria-hidden className="size-[1.2em]" />
-                    </span>
-                  </span>
-                </Link>
+                  )}
+                </FaceLink>
               </div>
             );
           })}
@@ -199,7 +215,7 @@ export function PrismCube({ autoplay, variant, sizes, className }: Props) {
           <button
             key={face.id}
             type="button"
-            aria-label={`Show ${face.word}`}
+            aria-label={`Show ${faceLabel(face)}`}
             aria-current={i === current}
             onClick={() => setStep((s) => s + mod(i - current, n))}
             className={cn(
@@ -216,4 +232,45 @@ export function PrismCube({ autoplay, variant, sizes, className }: Props) {
       </div>
     </div>
   );
+}
+
+const faceLinkClass =
+  "absolute inset-0 block overflow-hidden outline-none focus-visible:ring-3 focus-visible:ring-white focus-visible:ring-inset";
+
+/** A face's link: a shop path through the router, an https:// address as a plain link, or none. */
+function FaceLink({ face, focusable, children }: { face: ShowcaseFace; focusable: boolean; children: React.ReactNode }) {
+  if (!face.href) return <div className={faceLinkClass}>{children}</div>;
+  if (face.href.startsWith("/")) {
+    return (
+      <Link href={face.href} tabIndex={focusable ? 0 : -1} draggable={false} className={faceLinkClass}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={face.href} rel="noopener" tabIndex={focusable ? 0 : -1} draggable={false} className={faceLinkClass}>
+      {children}
+    </a>
+  );
+}
+
+/** Below Tailwind's `sm`, where a banner's phone artwork (when it has one) takes over. */
+const MOBILE_QUERY = "(max-width: 639px)";
+
+/**
+ * A banner's picture comes sized from the API, so it skips the optimizer (like every API
+ * image) and swaps to its phone artwork on narrow screens; the built-in faces use next/image.
+ * The words are written over it, so the picture is described only when the face has none.
+ */
+function FacePicture({ face, sizes }: { face: ShowcaseFace; sizes: string }) {
+  const alt = face.word ? "" : (face.alt ?? "");
+  if (isApiImage(face.image)) {
+    return (
+      <picture>
+        {face.mobileImage && <source media={MOBILE_QUERY} srcSet={face.mobileImage} />}
+        <img src={face.image} alt={alt} draggable={false} decoding="async" className="absolute inset-0 size-full object-cover" />
+      </picture>
+    );
+  }
+  return <Image src={face.image} alt={alt} fill draggable={false} quality={90} sizes={sizes} className="object-cover" />;
 }
