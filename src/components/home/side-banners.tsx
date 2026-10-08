@@ -16,7 +16,7 @@ export function SideBanners({ banners }: { banners: ApiBanner[] }) {
         <BannerLink
           key={banner.id}
           banner={banner}
-          className="group relative block aspect-3/2 overflow-hidden rounded-lg bg-surface-container shadow-card outline-none transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 sm:aspect-3/1 lg:aspect-auto lg:min-h-40 lg:flex-1"
+          className="group relative block aspect-3/2 overflow-hidden bg-surface-container shadow-card outline-none transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 sm:aspect-3/1 lg:aspect-auto lg:min-h-40 lg:flex-1"
         >
           <BannerPicture banner={banner} className="transition-transform duration-300 group-hover:scale-[1.02]" />
           {(banner.headline || banner.subheadline) && (
