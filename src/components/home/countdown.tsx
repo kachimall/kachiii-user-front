@@ -1,6 +1,7 @@
 "use client";
 
 import { useFlashSaleRemaining, useTimeLeft } from "@/lib/flash-sale";
+import { cn } from "@/lib/utils";
 
 /** "02h : 43m : 24s" — used in the hero banner. */
 export function InlineCountdown({ className }: { className?: string }) {
@@ -14,20 +15,25 @@ export function InlineCountdown({ className }: { className?: string }) {
   );
 }
 
-/** "2d 04h : 43m : 24s" until a fixed time (a home banner's end). */
+/** "2d 04h 43m 24s" until a fixed time (a home banner's end), units set smaller than the numbers. */
 export function EndsAtCountdown({ endsAt, className }: { endsAt: string; className?: string }) {
   const left = useTimeLeft(endsAt);
   const [h, m, s] = left?.parts ?? ["--", "--", "--"];
   const days = left && left.days > 0 ? left.days : 0;
+  const segments: [string | number, string][] = [...(days > 0 ? [[days, "d"] as [number, string]] : []), [h, "h"], [m, "m"], [s, "s"]];
 
   return (
     <time
       dateTime={endsAt}
-      className={className}
+      className={cn("inline-flex items-baseline gap-[0.35em]", className)}
       aria-label={left ? `${days > 0 ? `${days} days ` : ""}${h} hours ${m} minutes ${s} seconds left` : undefined}
     >
-      {days > 0 && `${days}d `}
-      {h}h : {m}m : {s}s
+      {segments.map(([value, unit]) => (
+        <span key={unit}>
+          {value}
+          <span className="ml-px text-[0.75em] font-medium opacity-70">{unit}</span>
+        </span>
+      ))}
     </time>
   );
 }

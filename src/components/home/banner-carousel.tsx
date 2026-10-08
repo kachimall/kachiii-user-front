@@ -68,10 +68,10 @@ export function BannerCarousel({ banners }: { banners: ApiBanner[] }) {
       </ShowcaseSlot>
 
       {banner.countdown_ends_at && (
-        <div className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-label-md text-white shadow-inner backdrop-blur-md">
-          <TimerIcon aria-hidden className="size-4 text-tertiary-fixed" />
-          <span>Ends in:</span>
-          <EndsAtCountdown endsAt={banner.countdown_ends_at} className="font-heading font-bold tracking-wider tabular-nums" />
+        <div className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-full bg-black/55 py-1 pr-2.5 pl-2 text-label-xs text-white shadow-md ring-1 ring-white/15 backdrop-blur-md">
+          <TimerIcon aria-hidden className="size-3.5 text-tertiary-fixed" />
+          <span className="font-medium tracking-wider text-white/75 uppercase">Ends in</span>
+          <EndsAtCountdown endsAt={banner.countdown_ends_at} className="font-heading font-bold tabular-nums" />
         </div>
       )}
 

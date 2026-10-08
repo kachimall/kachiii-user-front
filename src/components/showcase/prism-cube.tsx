@@ -161,21 +161,22 @@ export function PrismCube({ autoplay, variant, sizes, className }: Props) {
                     <>
                       <span
                         aria-hidden
-                        className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent"
+                        className="absolute inset-0 bg-linear-to-r from-black/50 via-black/15 to-transparent"
                       />
-                      <span className="absolute inset-0 flex flex-col justify-end p-[5cqw] pb-[9cqw] text-white">
+                      {/* Words keep to the left half so they don't run over the picture's subject. */}
+                      <span className="absolute inset-y-0 left-0 flex max-w-[52cqw] flex-col justify-end p-[5cqw] pb-[9cqw] text-white">
                         {face.word && (
                           <span
-                            className="font-heading leading-[0.9] font-extrabold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
-                            style={{ fontSize: face.word.length > 8 ? "9cqw" : "17cqw" }}
+                            className="font-heading leading-[0.95] font-extrabold tracking-tight text-balance drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
+                            style={{ fontSize: face.word.length > 8 ? "max(20px, 5.5cqw)" : "max(28px, 9cqw)" }}
                           >
                             {face.word}
                           </span>
                         )}
                         {face.tagline && (
                           <span
-                            className="mt-[1.5cqw] flex items-center gap-1 font-semibold drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]"
-                            style={{ fontSize: "max(11px, 3.4cqw)" }}
+                            className="mt-[1.5cqw] flex items-center gap-1 leading-snug font-semibold text-balance drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]"
+                            style={{ fontSize: "max(11px, 2.6cqw)" }}
                           >
                             {face.tagline}
                             {face.href && !face.button && <ArrowRightIcon aria-hidden className="size-[1.2em]" />}
@@ -195,12 +196,12 @@ export function PrismCube({ autoplay, variant, sizes, className }: Props) {
                   )}
                   {face.endsAt && (
                     <span
-                      className="absolute top-[3cqw] right-[3cqw] flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-white backdrop-blur-md"
-                      style={{ fontSize: "max(11px, 2.4cqw)" }}
+                      className="absolute top-[3cqw] right-[3cqw] flex items-center gap-[0.5em] rounded-full bg-black/55 py-[0.35em] pr-[0.8em] pl-[0.6em] text-white shadow-md ring-1 ring-white/15 backdrop-blur-md"
+                      style={{ fontSize: "max(10px, 1.8cqw)" }}
                     >
-                      <TimerIcon aria-hidden className="size-[1.2em] text-tertiary-fixed" />
-                      <span>Ends in:</span>
-                      <EndsAtCountdown endsAt={face.endsAt} className="font-heading font-bold tracking-wider tabular-nums" />
+                      <TimerIcon aria-hidden className="size-[1.15em] text-tertiary-fixed" />
+                      <span className="text-[0.85em] font-medium tracking-wider text-white/75 uppercase">Ends in</span>
+                      <EndsAtCountdown endsAt={face.endsAt} className="font-heading font-bold tabular-nums" />
                     </span>
                   )}
                 </FaceLink>
