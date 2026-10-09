@@ -20,7 +20,6 @@ export const mainNav = [
   { label: "Kachiii Mall", href: "/products" },
   { label: "Super Brand Day", href: "/products" },
   { label: "Global Express", href: "/products" },
-  { label: "Vouchers & Rewards", href: "/#vouchers" },
   { label: "Clearance 70% Off", href: "/products?sort=price-asc" },
 ];
 

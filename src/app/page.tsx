@@ -1,19 +1,17 @@
-import { FlameIcon } from "lucide-react";
 import { BannerCarousel } from "@/components/home/banner-carousel";
 import { CategoryRail } from "@/components/home/category-rail";
-import { ClaimVoucherButton } from "@/components/home/claim-voucher-button";
 import { DiscoverFeed } from "@/components/home/discover-feed";
 import { FlashSale } from "@/components/home/flash-sale";
 import { HeroCarousel } from "@/components/home/hero-carousel";
+import { HomeSections } from "@/components/home/home-sections";
 import { PromoTiles } from "@/components/home/promo-tiles";
-import { QuickActions } from "@/components/home/quick-actions";
 import { SideBanners } from "@/components/home/side-banners";
 import { SponsoredAds } from "@/components/product/sponsored-ads";
 import { IdleShowcase, ShowcaseSlot } from "@/components/showcase/idle-showcase";
 import { ShowcaseProvider } from "@/components/showcase/showcase-context";
 import { getHomeBanners } from "@/lib/api/banners";
-import { getCategories, getFlashSaleProducts, getRecommendedProducts } from "@/lib/api/products";
-import { heroSlides, voucherCode } from "@/lib/data/home";
+import { getCategories, getFlashSaleProducts, getHomeSections, getRecommendedProducts } from "@/lib/api/products";
+import { heroSlides } from "@/lib/data/home";
 import { bannerFace, showcaseFaces } from "@/lib/data/showcase";
 
 /**
@@ -28,7 +26,11 @@ import { bannerFace, showcaseFaces } from "@/lib/data/showcase";
  * admin's home carousel banners (GET /banners) when there are any, else the
  * built-in ones. With `?showcase=2` the slider shows the admin's banners too,
  * else the built-in promos. The cards beside the hero show the
- * admin's side banners when there are any.
+ * admin's side banners when there are any. The rows under the categories are
+ * the admin's home sections (GET /home-sections), none when staff set up none.
+ *
+ * The voucher strip and the shortcut row (quick-actions.tsx) are hidden until the
+ * backend has campaigns for them; their components are kept.
  */
 type Placement = "default" | "1" | "2" | "3";
 
@@ -36,11 +38,12 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
   const { showcase } = await searchParams;
   const placement: Placement = showcase === "1" || showcase === "2" || showcase === "3" ? showcase : "default";
 
-  const [flashSale, recommended, categories, banners] = await Promise.all([
+  const [flashSale, recommended, categories, banners, sections] = await Promise.all([
     getFlashSaleProducts(),
     getRecommendedProducts(),
     getCategories(),
     getHomeBanners(),
+    getHomeSections(),
   ]);
   const carousel = placement === "2" ? banners.home_carousel : [];
   // The cube turns through the admin's home carousel banners, or the built-in faces without any.
@@ -48,26 +51,9 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
 
   return (
     <>
-      <div
-        id="vouchers"
-        className="flex scroll-mt-40 flex-wrap items-center justify-center gap-x-2.5 gap-y-1 bg-primary-fixed px-3 py-1 text-center text-label-md text-on-primary-fixed-variant md:px-6"
-      >
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-1.5 py-0.5 text-label-xs text-white motion-safe:animate-pulse">
-          <FlameIcon aria-hidden className="size-3" />
-          LIVE
-        </span>
-        <span>
-          <strong>MID-YEAR MEGA BLOWOUT:</strong> Extra 15% stackable mall voucher for the next 200 orders. Use code:{" "}
-          <strong>{voucherCode}</strong>
-        </span>
-        <ClaimVoucherButton className="font-bold text-primary underline transition-colors hover:text-on-primary-fixed-variant">
-          Collect Voucher
-        </ClaimVoucherButton>
-      </div>
-
       <ShowcaseProvider faces={faces}>
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-3 py-2.5 md:px-6">
-          <section aria-label="Featured promotions" className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-3 py-3 md:gap-6 md:px-6 md:py-4">
+          <section aria-label="Featured promotions" className="grid grid-cols-1 gap-2.5 md:gap-4 lg:grid-cols-12">
             {placement === "default" || placement === "3" ? (
               <ShowcaseSlot
                 className="w-full lg:col-span-8 lg:aspect-auto lg:h-full lg:min-h-90"
@@ -80,9 +66,9 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
             )}
             {banners.home_side.length > 0 ? <SideBanners banners={banners.home_side} /> : <PromoTiles />}
           </section>
-          <QuickActions />
           <FlashSale products={flashSale} />
           <CategoryRail categories={categories} />
+          <HomeSections sections={sections} />
           <SponsoredAds placement="home" title="Sponsored picks" />
           <DiscoverFeed products={recommended} />
         </div>

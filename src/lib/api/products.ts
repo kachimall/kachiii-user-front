@@ -1,5 +1,5 @@
 import { ApiError, api } from "@/lib/api/client";
-import type { ApiCategory, ApiProduct, ApiProductCard, ApiRating, ApiSeo, ApiStore, ApiVariant } from "@/lib/api/schema";
+import type { ApiCategory, ApiHomeSection, ApiProduct, ApiProductCard, ApiRating, ApiSeo, ApiStore, ApiVariant } from "@/lib/api/schema";
 import { categoryArt, fallbackCategoryArt } from "@/lib/data/category-art";
 import type { Category, Product, ProductQuery, ProductSort, ProductVariant, Store } from "@/types";
 
@@ -144,6 +144,23 @@ export async function getFlashSaleProducts(): Promise<Product[]> {
 
 export async function getRecommendedProducts(): Promise<Product[]> {
   return getProducts({ sort: "newest", limit: 30 });
+}
+
+export type HomeSection = Omit<ApiHomeSection, "products"> & { products: Product[] };
+
+/**
+ * The staff's home page rows (newest, best selling, top rated, a category's best sellers or
+ * hand-picked products), in order. Never throws: an error just leaves them off the page.
+ */
+export async function getHomeSections(): Promise<HomeSection[]> {
+  try {
+    const sections = await api<ApiHomeSection[]>("/home-sections", { revalidate: CATALOG_TTL });
+    return sections
+      .map((s) => ({ ...s, products: s.products.map(toCard) }))
+      .filter((s) => s.products.length > 0);
+  } catch {
+    return [];
+  }
 }
 
 /**

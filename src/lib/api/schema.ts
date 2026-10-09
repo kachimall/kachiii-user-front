@@ -192,6 +192,17 @@ export type ApiBanners = {
   home_side: ApiBanner[];
 };
 
+/** A home page section (GET /home-sections): a titled row of product cards staff set up. */
+export type ApiHomeSection = {
+  id: string;
+  title: string;
+  kind: "newest" | "best_selling" | "top_rated" | "category" | "picked";
+  /** Set only on a category section. */
+  category: ApiRef | null;
+  /** Never empty: the backend leaves out a section with nothing to show. */
+  products: ApiProductCard[];
+};
+
 export type ApiUser = {
   id: string;
   name: string;
